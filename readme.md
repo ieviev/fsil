@@ -1,4 +1,4 @@
-# FSIL: FSharp Inlines Library
+# fsil: F# inline library
 
 <a href="https://www.nuget.org/packages/fsil"><img alt="Nuget" src="https://img.shields.io/nuget/v/fsil"></a>
 
@@ -20,9 +20,8 @@ Example:
 
 #### 
 
-I love F# for high performance programming and i've found this little utils library very useful as it makes high-level generic F# a little more feasible without punishing the user performance-wise. 
-An interesting piece of trivia about this is that the functions in this library compile down to **exactly the same implementation
-as the resolved generic** so `iter f x` to the compiler is **identical** to `ValueOption.iter f x`.
+I love F# for high performance programming and this makes high-level generic F# a little more feasible without punishing the user performance-wise. 
+The functions in this library compile down to **exactly the same form as the (optimal) resolved implementation** so `iter f x` to the compiler is **identical** to `ValueOption.iter f x`.
 
 You can also define your own implementations for `iter` and `map` as static members. here is an example for a Tree, for documentation just look at the [source code itself](./src/fsil/Library.fs).
 
