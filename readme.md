@@ -3,7 +3,7 @@
 <a href="https://www.nuget.org/packages/fsil"><img alt="Nuget" src="https://img.shields.io/nuget/v/fsil"></a>
 
 Features:
-- a small generic utils library like (https://github.com/fsprojects/FSharpPlus)
+- a small generic utils library like [FSharpPlus](https://github.com/fsprojects/FSharpPlus)
 - all functions are inline and trimmable, won't bloat your binary size in any way
 - Fable compatible
 - does not create junk variables
