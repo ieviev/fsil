@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0; net9.0</TargetFrameworks>
+    <RootNamespace>Fsil</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TrimMode>full</TrimMode>
+    <IsTrimmable>true</IsTrimmable>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PackageOutputPath>./nupkg</PackageOutputPath>
+    <Authors>ieviev</Authors>
+    <Title>$(ProjectName)</Title>
+    <Version>1.0.15</Version>
+    <RepositoryUrl>https://github.com/ieviev/fsil</RepositoryUrl>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
+    <PackageLicenseFile>license.txt</PackageLicenseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\readme.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
+    <None Include="..\..\license.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="*.fsproj; **\*.fs; **\*.fsi" PackagePath="fable\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Library.fs" />
+  </ItemGroup>
+</Project>
