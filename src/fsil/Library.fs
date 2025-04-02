@@ -4,8 +4,106 @@ module Fsil
 // constrained type variables
 #nowarn "64"
 
+
+[<AbstractClass; Sealed; AutoOpen>]
+module Abstract =
+    let inline zero<'a when 'a: (static member Zero: 'a)> : ^a = 'a.Zero
+    let inline one<'a when 'a: (static member One: 'a)> : ^a = 'a.One
+    let inline none<'a when 'a: (static member None: 'a)> : ^a = 'a.None
+
+    let inline some<'a, 'b when 'a: (static member Some: 'b -> 'a)> : 'b -> ^a =
+        'a.Some
+
+    let inline is_some<'a, ^b when 'a: (member IsSome: bool)> (arg: ^a) : bool =
+        arg.IsSome
+
+    let inline is_none<'a when 'a: (static member None: 'a) and ^a: equality>
+        (arg: ^a)
+        : bool =
+        arg = 'a.None
+
+    let inline value<'a, ^b when 'a: (member Value: ^b)> (arg: ^a) : ^b = arg.Value
+
+    [<CompiledName("ToEnum")>]
+    let inline enum (value: ^e) : ^t when ^t: enum<^e> =
+        LanguagePrimitives.EnumOfValue value
+
+    [<CompiledName("EnumValue")>]
+    let inline enumv (enum: ^t when ^t: enum<^e>) : ^e =
+        LanguagePrimitives.EnumToValue enum
+
+
+    let inline default_value<'a, ^b
+        when 'a: (member Value: ^b) and 'a: (member IsSome: bool)>
+        (or_else: ^b)
+        (arg: ^a)
+        : ^b =
+        if is_some arg then value arg else or_else
+
+
+#if FABLE_COMPILER
+    // stdout.WriteLine is generally better but fable does not support it
+    // this compiles down to console.log
+    let inline print (x: obj) = System.Console.WriteLine(x)
+#else
+    let inline print (x: obj) = stdout.WriteLine($"%A{x}")
+#endif
+
+
 [<AbstractClass>]
 module Internal =
+
+    [<AbstractClass; Sealed>]
+    type IterateIndexed =
+        static member inline IterateIndexed
+            ((x: option<'t>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
+            : unit =
+            if is_some x then
+                f 0 (value x)
+
+        static member inline IterateIndexed
+            ((x: voption<'t>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
+            : unit =
+            if is_some x then
+                f 0 (value x)
+
+        static member inline IterateIndexed
+            ((x: 't[], f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
+            : unit =
+            let mutable i = 0
+
+            while i < x.Length do
+                f i x[i]
+                i <- i + 1
+
+        static member inline IterateIndexed
+            ((x: Result<'t, _>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
+            : unit =
+            match x with
+            | Ok v -> f 0 v
+            | _ -> ()
+
+        static member inline IterateIndexed
+            ((x: ResizeArray<'t>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit) : unit =
+            let mutable i = 0
+
+            while i < x.Count do
+                f i x[i]
+                i <- i + 1
+
+
+        static member inline Invoke
+            (action: int -> 't -> unit)
+            (source: 'Functor)
+            : unit =
+
+            let inline call (tmp: ^M -> unit, source: ^I) =
+                ((^M or ^I): (static member IterateIndexed: (_ * _) * _ -> unit) (source,
+                                                                                  action),
+                                                                                 tmp)
+
+            call ((fun (_: IterateIndexed) -> ()), source)
+
     [<AbstractClass; Sealed>]
     type Iterate =
         static member inline Iterate
@@ -37,8 +135,11 @@ module Internal =
         static member inline Iterate
             ((x: ResizeArray<'t>, f: 't -> unit), _tmp: Iterate -> unit)
             : unit =
-            for item in x do
-                f item
+            let mutable i = 0
+
+            while i < x.Count do
+                f x[i]
+                i <- i + 1
 
         static member inline Invoke (action: 't -> unit) (source: 'Functor) : unit =
 
@@ -49,7 +150,7 @@ module Internal =
 
             call ((fun (_: Iterate) -> ()), source)
 
-    [<AbstractClass; Sealed; NoComparison>]
+    [<AbstractClass; Sealed>]
     type Map =
         static member inline Map
             ((x: option<_>, f: 't -> 'u), _tmp: Map -> unit)
@@ -101,49 +202,9 @@ module Internal =
 
 
 
-[<AbstractClass; Sealed; AutoOpen>]
-module Abstract =
-    let inline zero<'a when 'a: (static member Zero: 'a)> : ^a = 'a.Zero
-    let inline one<'a when 'a: (static member One: 'a)> : ^a = 'a.One
-    let inline none<'a when 'a: (static member None: 'a)> : ^a = 'a.None
-
-    let inline some<'a, 'b when 'a: (static member Some: 'b -> 'a)> : 'b -> ^a =
-        'a.Some
-
-    let inline is_some<'a, ^b when 'a: (member IsSome: bool)> (arg: ^a) : bool =
-        arg.IsSome
-
-    let inline is_none<'a when 'a: (static member None: 'a) and ^a: equality>
-        (arg: ^a)
-        : bool =
-        arg = 'a.None
-
-    let inline value<'a, ^b when 'a: (member Value: ^b)> (arg: ^a) : ^b = arg.Value
-
-    [<CompiledName("ToEnum")>]
-    let inline enum (value: ^e) : ^t when ^t: enum<^e> =
-        LanguagePrimitives.EnumOfValue value
-
-    [<CompiledName("EnumValue")>]
-    let inline enumv (enum: ^t when ^t: enum<^e>) : ^e =
-        LanguagePrimitives.EnumToValue enum
 
 
-    let inline default_value<'a, ^b
-        when 'a: (member Value: ^b) and 'a: (member IsSome: bool)>
-        (or_else: ^b)
-        (arg: ^a)
-        : ^b =
-        if is_some arg then value arg else or_else
 
-
-#if FABLE_COMPILER
-    // stdout.WriteLine is generally better but fable does not support it
-    // this compiles down to console.log
-    let inline print (x: obj) = System.Console.WriteLine(x)
-#else
-    let inline print (x: obj) = stdout.WriteLine($"%A{x}")
-#endif
 
 
 [<AbstractClass; Sealed; AutoOpen>]
@@ -151,6 +212,9 @@ type Abstract =
 
     static member inline iter (f: 't -> unit) (x: 'Functor) : unit =
         Internal.Iterate.Invoke f x
+
+    static member inline iteri (f: int -> 't -> unit) (x: 'Functor) : unit =
+        Internal.IterateIndexed.Invoke f x
 
     static member inline map (f: 't -> 'u) (x: 'Functor) : 'result =
         Internal.Map.Invoke f x
