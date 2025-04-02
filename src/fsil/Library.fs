@@ -4,7 +4,6 @@ module Fsil
 // constrained type variables
 #nowarn "64"
 
-
 [<AbstractClass; Sealed; AutoOpen>]
 module Abstract =
     let inline zero<'a when 'a: (static member Zero: 'a)> : ^a = 'a.Zero
@@ -208,23 +207,74 @@ module Internal =
 
             call ((fun (_: Map) -> ()), source)
 
+    [<AbstractClass; Sealed>]
+    type MapIndexed =
+        static member inline MapIndexed
+            ((x: option<'t>, f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            : option< ^u > =
+            if is_some x then some (f 0 (value x)) else none
+
+        static member inline MapIndexed
+            ((x: voption<'t>, f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            : voption<'u> =
+            if is_some x then some (f 0 (value x)) else none
+
+        static member inline MapIndexed
+            ((x: 't[], f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            : 'u[] =
+            let coll = Array.zeroCreate<'u> (Collections.Length x)
+            let mutable i = 0
+
+            while i < x.Length do
+                coll[i] <- f i x[i]
+                i <- i + 1
+
+            coll
+
+        static member inline MapIndexed
+            ((x: Result<'t, _>, f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            : Result<'u, _> =
+            match x with
+            | Ok v -> Ok(f 0 v)
+            | Error e -> Error e
+
+        static member inline MapIndexed
+            ((x: ResizeArray<'t>, f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            : ResizeArray<'u> =
+            let coll = ResizeArray(Collections.Length x)
+            let mutable i = 0
+
+            while i < x.Count do
+                coll[i] <- f i x[i]
+                i <- i + 1
+
+            coll
 
 
+        static member inline Invoke (action: int -> 't -> ^u) (source: 'source) : _ =
 
+            let inline call (tmp: ^M -> unit, source: ^I) =
+                ((^M or ^I): (static member MapIndexed: (_ * _) * _ -> unit) (source,
+                                                                              action),
+                                                                             tmp)
 
+            call ((fun (_: MapIndexed) -> ()), source)
 
 
 
 [<AbstractClass; Sealed; AutoOpen>]
 type Abstract =
 
-    static member inline iter (f: 't -> unit) (x: 'input) : unit =
+    static member inline iter (f: 't -> unit) (x: 'source) : unit =
         Internal.Iterate.Invoke f x
 
-    static member inline iteri (f: int -> 't -> unit) (x: 'input) : unit =
+    static member inline iteri (f: int -> 't -> unit) (x: 'source) : unit =
         Internal.IterateIndexed.Invoke f x
 
-    static member inline map (f: 't -> 'u) (x: 'input) : 'result =
+    static member inline map (f: 't -> 'u) (x: 'source) : 'result =
         Internal.Map.Invoke f x
 
-    static member inline len(x: 'input) : 'result = Internal.Collections.Length x
+    static member inline mapi (f: int -> 't -> unit) (x: 'source) : unit =
+        Internal.MapIndexed.Invoke f x
+
+    static member inline len(x: 'source) : 'result = Internal.Collections.Length x
