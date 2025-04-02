@@ -4,26 +4,29 @@
 
 Features:
 - a small generic utils library like [FSharpPlus](https://github.com/fsprojects/FSharpPlus)
-- all functions are inline and trimmable, won't bloat your binary size in any way
+- all functions are inline and trimmable, won't bloat your binary size: you pay for only what you use
 - Fable compatible
-- does not create junk variables
-- does not have implicit allocations
+- **zero cost**: does not create junk variables or implicit allocations
 - uses `[<AutoOpen>]` so all functions are in the global namespace
 
 Example:
 
 ![](./data/demo.png)
 
-[benchmarks](./src/fsil.benchmarks/Program.fs) compared to FSharpPlus
+[Benchmark comparisons](./src/fsil.benchmarks/Program.fs) to FSharpPlus
     
 ![](./data/benchmarks.png)
 
 #### 
 
 I love F# for high performance programming and this makes high-level generic F# a little more feasible without punishing the user performance-wise. 
-The functions in this library compile down to **exactly the same form as the (optimal) resolved implementation** so `iter f x` to the compiler is **identical** to `ValueOption.iter f x`.
+The functions in this library compile down to **exactly the same form as the (optimal) resolved implementation** so `iter f x` to the compiler is **identical** to e.g., `ValueOption.iter f x` or `Array.iter f x`.
 
-You can also define your own implementations for `iter` and `map` as static members. here is an example for a Tree, for documentation just look at the [source code itself](./src/fsil/Library.fs).
+Currently this library contains a fairly small set of functions:
+
+`iter`, `iteri`, `map`, `mapi`, `is_some`, `is_none`, `some`, `none`, `value`, `len`, `enum`, `enumv`, `default_value`, `zero`, `one`, `print`.
+
+You can also define your own implementations as static members. here is an example for `iter` and `map` on a Tree, for documentation just look at the [source code itself](./src/fsil/Library.fs).
 
 ```fsharp
 type Tree<'T> =
@@ -55,5 +58,5 @@ let tree2: Tree<int> = tree1 |> map (fun v -> v + 1)
 let itertree = tree1 |> iter (fun v -> print v)
 ```
 
-Most importantly remember to have fun! :)
+Most important remember to have (f#)un! :)
 
