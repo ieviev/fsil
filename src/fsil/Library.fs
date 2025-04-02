@@ -54,6 +54,14 @@ module Abstract =
 module Internal =
 
     [<AbstractClass; Sealed>]
+    type Collections =
+        static member inline Length(x: option<'t>) = if is_some x then 1 else 0
+        static member inline Length(x: voption<'t>) = if is_some x then 1 else 0
+        static member inline Length(x: array<'t>) = x.Length
+        static member inline Length(x: ResizeArray<'t>) = x.Count
+
+
+    [<AbstractClass; Sealed>]
     type IterateIndexed =
         static member inline IterateIndexed
             ((x: option<'t>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
@@ -210,11 +218,13 @@ module Internal =
 [<AbstractClass; Sealed; AutoOpen>]
 type Abstract =
 
-    static member inline iter (f: 't -> unit) (x: 'Functor) : unit =
+    static member inline iter (f: 't -> unit) (x: 'input) : unit =
         Internal.Iterate.Invoke f x
 
-    static member inline iteri (f: int -> 't -> unit) (x: 'Functor) : unit =
+    static member inline iteri (f: int -> 't -> unit) (x: 'input) : unit =
         Internal.IterateIndexed.Invoke f x
 
-    static member inline map (f: 't -> 'u) (x: 'Functor) : 'result =
+    static member inline map (f: 't -> 'u) (x: 'input) : 'result =
         Internal.Map.Invoke f x
+
+    static member inline len(x: 'input) : 'result = Internal.Collections.Length x
