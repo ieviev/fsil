@@ -31,14 +31,12 @@ module Abstract =
     let inline enumv (enum: ^t when ^t: enum<^e>) : ^e =
         LanguagePrimitives.EnumToValue enum
 
-
-    let inline default_value<'a, ^b
+    let inline default_with<'a, ^b
         when 'a: (member Value: ^b) and 'a: (member IsSome: bool)>
-        (or_else: ^b)
+        (or_else: unit -> ^b)
         (arg: ^a)
         : ^b =
-        if is_some arg then value arg else or_else
-
+        if is_some arg then value arg else or_else ()
 
 #if FABLE_COMPILER
     // stdout.WriteLine is generally better but fable does not support it
@@ -51,6 +49,46 @@ module Abstract =
 
 [<AbstractClass>]
 module Internal =
+
+    [<AbstractClass; Sealed>]
+    type Default =
+
+        static member inline Default((_f: option<'t> -> unit)) : option<'t> = None
+
+        static member inline Default((_f: voption<'t> -> unit)) : voption<'t> =
+            ValueNone
+
+        static member inline Default((_f: Result<'t, ^U> -> unit)) : Result<'t, 'u> =
+            let inline call source =
+                ((^U or Default): (static member Default: _ -> ^U) ((source, _f)))
+
+            Error(call (fun (v: ^U) -> ()))
+
+        static member inline Default
+            ((_f: ResizeArray<'t> -> unit))
+            : ResizeArray<'t> =
+            ResizeArray<'t>()
+
+        static member inline Default((_f: list<'t> -> unit)) : list<'t> = []
+
+        static member inline Default((_f: array<'t> -> unit)) : array<'t> = [||]
+
+        static member inline Default((_f: byte -> unit)) : byte = 0uy
+        static member inline Default((_f: char -> unit)) : char = char 0
+        static member inline Default((_f: uint -> unit)) : uint = 0u
+        static member inline Default((_f: int -> unit)) : int = 0
+        static member inline Default((_f: bool -> unit)) : bool = false
+        static member inline Default((_f: string -> unit)) : string = ""
+
+        static member inline Default((_f: System.Guid -> unit)) : System.Guid =
+            System.Guid()
+
+        static member inline Invoke< ^I
+            when (^I or Default): (static member Default: (^I -> unit) -> ^I)>
+            ()
+            : ^I =
+            ((^I or Default): (static member Default: (^I -> unit) -> ^I) (fun v ->
+                ()))
 
     [<AbstractClass; Sealed>]
     type Length =
@@ -289,3 +327,10 @@ type Abstract =
 
     static member inline len(source: 't) : int =
         Internal.Length.Invoke (fun _ -> ()) source
+
+    /// default instance, calls static member Default
+    static member inline _default< ^t
+        when (^t or Internal.Default): (static member Default: (^t -> unit) -> ^t)>
+        ()
+        : ^t =
+        Internal.Default.Invoke< ^t>()

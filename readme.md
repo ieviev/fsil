@@ -25,7 +25,7 @@ The functions in this library compile down to **exactly the same form as the (op
 
 Currently this library contains a fairly small set of functions:
 
-`iter`, `iteri`, `map`, `mapi`, `is_some`, `is_none`, `some`, `none`, `value`, `len`, `enum`, `enumv`, `default_value`, `zero`, `one`, `print`.
+`iter`, `iteri`, `map`, `mapi`, `is_some`, `is_none`, `some`, `none`, `value`, `len`, `enum`, `enumv`, `_default`, `default_with`, `zero`, `one`, `print`.
 
 You can also define your own implementations as static members. [here is an example](./src/fsil.test/Program.fs) for `iter` and `map` on a Tree ((note the extra set of parens)), for documentation just look at the [source code itself](./src/fsil/Library.fs).
 

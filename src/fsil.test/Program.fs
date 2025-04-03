@@ -35,8 +35,16 @@ type Tree<'T> =
         self |> iter (fun _ -> len_total <- len_total + 1)
         len_total
 
+    static member inline Default<'inner
+        when (^inner or Internal.Default): (static member Default:
+            (^inner -> unit) -> ^inner)>
+        ((_f))
+        : Tree< ^inner > =
+        let inner_default: 'inner = _default ()
+        Leaf(inner_default)
+
 // ensure all basic members exist, compile and run
-let inline basic_collection_tests (data: ^a) =
+let inline basic_collection_tests (data: ^a) : Test =
     testList $"collection tests {data.GetType().Name}" [
         test "iter" {
             let iter_: unit = data |> iter (fun v -> ())
@@ -58,6 +66,10 @@ let inline basic_collection_tests (data: ^a) =
             let len_: int = len data
             ()
         }
+        test "default" {
+            let default_: ^a = _default< ^a> ()
+            ()
+        }
     ]
 
 open Fsil.Internal
@@ -69,7 +81,24 @@ let testRoot =
         basic_collection_tests [ 1; 2; 3 ]
         basic_collection_tests (Some 1)
         basic_collection_tests (ValueSome 1)
-        basic_collection_tests (Tree.Node(1, Tree.Leaf 1, Tree.Leaf 2))
+        test "tree_tests" {
+            let data = (Tree.Node(1, Tree.Leaf 1, Tree.Leaf 2))
+            data |> iter (fun v -> ())
+            data |> iteri (fun (i: int) v -> ())
+            let _ = data |> map (fun v -> v + 1)
+            let _ = data |> mapi (fun (i: int) v -> ())
+            let _ = len data
+            let _ = _default<Tree<int>> ()
+            ()
+        }
+        test "defaults" {
+            let _ = _default<int> ()
+            let _ = _default<uint> ()
+            let _ = _default<string> ()
+            let _ = _default<bool> ()
+            let _ = _default<byte> ()
+            ()
+        }
     ]
 
 
