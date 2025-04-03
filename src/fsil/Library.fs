@@ -87,7 +87,7 @@ module Internal =
             when (^I or Default): (static member Default: (^I -> unit) -> ^I)>
             ()
             : ^I =
-            ((^I or Default): (static member Default: (^I -> unit) -> ^I) (fun v ->
+            ((^I or Default): (static member Default: (^I -> unit) -> ^I) (fun _ ->
                 ()))
 
     [<AbstractClass; Sealed>]
