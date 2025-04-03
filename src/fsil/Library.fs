@@ -99,7 +99,9 @@ module Internal =
             if is_some x then 1 else 0
 
         static member inline Length((x: Result<'t, _>, _f: unit -> unit)) : int =
-            if x.IsOk then 1 else 0
+            match x with
+            | Ok(_) -> 1
+            | _ -> 0
 
         static member inline Length((x: ResizeArray<'t>, _f: unit -> unit)) : int =
             x.Count
