@@ -41,29 +41,29 @@ type Benches() =
         |> Fsil.Abstract.map (fun v -> v + 10)
         |> Option.defaultValue 5
 
-    [<Benchmark>]
-    member self.FSharpPlusValueOptionMap() =
-        self.SomeValueOption
-        |> FSharpPlus.Operators.map (fun v -> v + 10)
-        |> FSharpPlus.Operators.map (fun v -> v + 10)
-        |> FSharpPlus.Operators.map (fun v -> v + 10)
-        |> FSharpPlus.Operators.map (fun v -> v + 10)
-        |> FSharpPlus.Operators.map (fun v -> v + 10)
-        |> FSharpPlus.Operators.map (fun v -> v + 10)
-        |> FSharpPlus.Operators.map (fun v -> v + 10)
-        |> ValueOption.defaultValue 5
+//     [<Benchmark>]
+//     member self.FSharpPlusValueOptionMap() =
+//         self.SomeValueOption
+//         |> FSharpPlus.Operators.map (fun v -> v + 10)
+//         |> FSharpPlus.Operators.map (fun v -> v + 10)
+//         |> FSharpPlus.Operators.map (fun v -> v + 10)
+//         |> FSharpPlus.Operators.map (fun v -> v + 10)
+//         |> FSharpPlus.Operators.map (fun v -> v + 10)
+//         |> FSharpPlus.Operators.map (fun v -> v + 10)
+//         |> FSharpPlus.Operators.map (fun v -> v + 10)
+//         |> ValueOption.defaultValue 5
 
-    [<Benchmark>]
-    member self.FsilValueOptionMap() =
-        self.SomeValueOption
-        |> Fsil.Abstract.map (fun v -> v + 10)
-        |> Fsil.Abstract.map (fun v -> v + 10)
-        |> Fsil.Abstract.map (fun v -> v + 10)
-        |> Fsil.Abstract.map (fun v -> v + 10)
-        |> Fsil.Abstract.map (fun v -> v + 10)
-        |> Fsil.Abstract.map (fun v -> v + 10)
-        |> Fsil.Abstract.map (fun v -> v + 10)
-        |> ValueOption.defaultValue 5
+//     [<Benchmark>]
+//     member self.FsilValueOptionMap() =
+//         self.SomeValueOption
+//         |> Fsil.Abstract.map (fun v -> v + 10)
+//         |> Fsil.Abstract.map (fun v -> v + 10)
+//         |> Fsil.Abstract.map (fun v -> v + 10)
+//         |> Fsil.Abstract.map (fun v -> v + 10)
+//         |> Fsil.Abstract.map (fun v -> v + 10)
+//         |> Fsil.Abstract.map (fun v -> v + 10)
+//         |> Fsil.Abstract.map (fun v -> v + 10)
+//         |> ValueOption.defaultValue 5
 
 
     [<Benchmark>]

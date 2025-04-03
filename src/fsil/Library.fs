@@ -53,30 +53,47 @@ module Abstract =
 module Internal =
 
     [<AbstractClass; Sealed>]
-    type Collections =
-        static member inline Length(x: option<'t>) = if is_some x then 1 else 0
-        static member inline Length(x: voption<'t>) = if is_some x then 1 else 0
-        static member inline Length(x: array<'t>) = x.Length
-        static member inline Length(x: ResizeArray<'t>) = x.Count
+    type Length =
+        static member inline Length((x: option<'t>, _f: unit -> unit)) : int =
+            if is_some x then 1 else 0
+
+        static member inline Length((x: voption<'t>, _f: unit -> unit)) : int =
+            if is_some x then 1 else 0
+
+        static member inline Length((x: Result<'t, _>, _f: unit -> unit)) : int =
+            if x.IsOk then 1 else 0
+
+        static member inline Length((x: ResizeArray<'t>, _f: unit -> unit)) : int =
+            x.Count
+
+        static member inline Length((x: list<'t>, _f: unit -> unit)) : int = x.Length
+
+        static member inline Length((x: array<'t>, _f: unit -> unit)) : int =
+            x.Length
+
+        static member inline Invoke (_f: unit -> unit) (source: 'I) : int =
+
+            let inline call source =
+                ((^I or Length): (static member Length: (_ * _) -> int) ((source, _f)))
+
+            call source
 
 
     [<AbstractClass; Sealed>]
     type IterateIndexed =
         static member inline IterateIndexed
-            ((x: option<'t>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
+            ((x: option<'t>, f: int -> 't -> unit))
             : unit =
             if is_some x then
                 f 0 (value x)
 
         static member inline IterateIndexed
-            ((x: voption<'t>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
+            ((x: voption<'t>, f: int -> 't -> unit))
             : unit =
             if is_some x then
                 f 0 (value x)
 
-        static member inline IterateIndexed
-            ((x: 't[], f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
-            : unit =
+        static member inline IterateIndexed((x: 't[], f: int -> 't -> unit)) : unit =
             let mutable i = 0
 
             while i < x.Length do
@@ -84,100 +101,91 @@ module Internal =
                 i <- i + 1
 
         static member inline IterateIndexed
-            ((x: Result<'t, _>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit)
+            ((x: Result<'t, _>, f: int -> 't -> unit))
             : unit =
             match x with
             | Ok v -> f 0 v
             | _ -> ()
 
         static member inline IterateIndexed
-            ((x: ResizeArray<'t>, f: int -> 't -> unit), _tmp: IterateIndexed -> unit) : unit =
+            ((x: ResizeArray<'t>, f: int -> 't -> unit))
+            : unit =
             let mutable i = 0
 
             while i < x.Count do
                 f i x[i]
                 i <- i + 1
 
+        static member inline IterateIndexed
+            ((x: 't list, f: int -> 't -> unit))
+            : unit =
+            List.iteri f x
 
         static member inline Invoke
             (action: int -> 't -> unit)
-            (source: 'Functor)
+            (source: 'source)
             : unit =
 
-            let inline call (tmp: ^M -> unit, source: ^I) =
-                ((^M or ^I): (static member IterateIndexed: (_ * _) * _ -> unit) (source,
-                                                                                  action),
-                                                                                 tmp)
+            let inline call (source: ^I) =
+                ((^I or IterateIndexed): (static member IterateIndexed:
+                    (_ * _) -> unit) ((source, action)))
 
-            call ((fun (_: IterateIndexed) -> ()), source)
+            call source
 
     [<AbstractClass; Sealed>]
     type Iterate =
-        static member inline Iterate
-            ((x: option<'t>, f: 't -> unit), _tmp: Iterate -> unit)
-            : unit =
+
+        static member inline Iterate((x: option<'t>, f: 't -> unit)) : unit =
             Option.iter f x
 
-        static member inline Iterate
-            ((x: voption<'t>, f: 't -> unit), _tmp: Iterate -> unit)
-            : unit =
+        static member inline Iterate((x: voption<'t>, f: 't -> unit)) : unit =
             ValueOption.iter f x
 
-        static member inline Iterate
-            ((x: 't[], f: 't -> unit), _tmp: Iterate -> unit)
-            : unit =
+        static member inline Iterate((x: 't[], f: 't -> unit)) : unit =
             let mutable i = 0
 
             while i < x.Length do
                 f x[i]
                 i <- i + 1
 
-        static member inline Iterate
-            ((x: Result<'t, _>, f: 't -> unit), _tmp: Iterate -> unit)
-            : unit =
+        static member inline Iterate((x: Result<'t, _>, f: 't -> unit)) : unit =
             match x with
             | Ok v -> f v
             | _ -> ()
 
-        static member inline Iterate
-            ((x: ResizeArray<'t>, f: 't -> unit), _tmp: Iterate -> unit)
-            : unit =
+        static member inline Iterate((x: ResizeArray<'t>, f: 't -> unit)) : unit =
             let mutable i = 0
 
             while i < x.Count do
                 f x[i]
                 i <- i + 1
 
-        static member inline Invoke (action: 't -> unit) (source: 'Functor) : unit =
+        static member inline Iterate((x: list<'t>, f: 't -> unit)) : unit =
+            List.iter f x
 
-            let inline call (tmp: ^M -> unit, source: ^I) =
-                ((^M or ^I): (static member Iterate: (_ * _) * _ -> unit) (source,
-                                                                           action),
-                                                                          tmp)
 
-            call ((fun (_: Iterate) -> ()), source)
+        static member inline Invoke (action: 't -> unit) (source: 'source) : unit =
+            let inline call (source: ^I) =
+                ((^I or Iterate): (static member Iterate: (_ * _) -> unit) ((source,
+                                                                             action)))
+
+            call source
 
     [<AbstractClass; Sealed>]
     type Map =
-        static member inline Map
-            ((x: option<_>, f: 't -> 'u), _tmp: Map -> unit)
-            : option<'u> =
+        static member inline Map((x: option<_>, f: 't -> 'u)) : option<'u> =
             Option.map f x
 
-        static member inline Map
-            ((x: voption<_>, f: 't -> 'u), _tmp: Map -> unit)
-            : voption<'u> =
+        static member inline Map((x: voption<_>, f: 't -> 'u)) : voption<'u> =
             ValueOption.map f x
 
 
-        static member inline Map
-            ((x: Result<'t, _>, f: 't -> 'u), _tmp: Map -> unit)
-            : Result<'u, _> =
+        static member inline Map((x: Result<'t, _>, f: 't -> 'u)) : Result<'u, _> =
             match x with
             | Ok v -> Ok(f v)
             | Error v -> Error v
 
-        static member inline Map((x: 't[], f: 't -> 'u), _tmp: Map -> unit) : 'u[] =
+        static member inline Map((x: 't[], f: 't -> 'u)) : 'u[] =
             let dest = Array.zeroCreate<'u> x.Length
             let mutable i = 0
 
@@ -189,92 +197,95 @@ module Internal =
 
 
         static member inline Map
-            ((x: ResizeArray<'t>, f: 't -> 'u), _tmp: Map -> unit)
+            ((x: ResizeArray<'t>, f: 't -> 'u))
             : ResizeArray<'u> =
-            let coll = ResizeArray()
+            let dest = ResizeArray()
 
             for item in x do
-                coll.Add(f item)
+                dest.Add(f item)
 
-            coll
+            dest
+
+        static member inline Map((x: list<'t>, f: 't -> 'u)) : list<'u> =
+            List.map f x
 
         static member inline Invoke (mapping: ^t -> ^u) (source: ^I) : 'Result =
 
-            let inline call (tmp: ^M -> unit, source: ^I) =
-                ((^M or ^I): (static member Map: (^I * (^t -> ^u)) * _ -> 'Result) (source,
-                                                                                    mapping),
-                                                                                   tmp)
+            let inline call (source: ^I) =
+                ((^I or Map): (static member Map: (^I * (^t -> ^u)) -> 'Result) ((source,
+                                                                                  mapping)))
 
-            call ((fun (_: Map) -> ()), source)
+            call source
 
     [<AbstractClass; Sealed>]
     type MapIndexed =
         static member inline MapIndexed
-            ((x: option<'t>, f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            ((x: option<'t>, f: int -> 't -> ^u))
             : option< ^u > =
-            if is_some x then some (f 0 (value x)) else none
+            if is_some x then Some(f 0 (value x)) else None
 
         static member inline MapIndexed
-            ((x: voption<'t>, f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            ((x: voption<'t>, f: int -> 't -> ^u))
             : voption<'u> =
-            if is_some x then some (f 0 (value x)) else none
+            if is_some x then ValueSome(f 0 (value x)) else ValueNone
 
-        static member inline MapIndexed
-            ((x: 't[], f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
-            : 'u[] =
-            let coll = Array.zeroCreate<'u> (Collections.Length x)
+        static member inline MapIndexed((x: 't[], f: int -> 't -> ^u)) : 'u[] =
+            let dest = Array.zeroCreate<'u> x.Length
             let mutable i = 0
 
             while i < x.Length do
-                coll[i] <- f i x[i]
+                dest[i] <- f i x[i]
                 i <- i + 1
 
-            coll
+            dest
 
         static member inline MapIndexed
-            ((x: Result<'t, _>, f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            ((x: Result<'t, _>, f: int -> 't -> ^u))
             : Result<'u, _> =
             match x with
             | Ok v -> Ok(f 0 v)
             | Error e -> Error e
 
         static member inline MapIndexed
-            ((x: ResizeArray<'t>, f: int -> 't -> ^u), _tmp: MapIndexed -> unit)
+            ((x: ResizeArray<'t>, f: int -> 't -> ^u))
             : ResizeArray<'u> =
-            let coll = ResizeArray(Collections.Length x)
+            let dest = ResizeArray x.Count
             let mutable i = 0
 
             while i < x.Count do
-                coll[i] <- f i x[i]
+                dest.Add(f i x[i])
                 i <- i + 1
 
-            coll
+            dest
 
+        static member inline MapIndexed
+            ((x: list<'t>, f: int -> 't -> ^u))
+            : list<'u> =
+            List.mapi f x
 
-        static member inline Invoke (action: int -> 't -> ^u) (source: 'source) : _ =
+        static member inline Invoke (action: int -> ^t -> ^u) (source: 'source) =
 
-            let inline call (tmp: ^M -> unit, source: ^I) =
-                ((^M or ^I): (static member MapIndexed: (_ * _) * _ -> unit) (source,
-                                                                              action),
-                                                                             tmp)
+            let inline call (source: ^I) =
+                ((^I or MapIndexed): (static member MapIndexed: (_ * _) -> _) ((source,
+                                                                                action)))
 
-            call ((fun (_: MapIndexed) -> ()), source)
+            call source
 
 
 
 [<AbstractClass; Sealed; AutoOpen>]
 type Abstract =
 
-    static member inline iter (f: 't -> unit) (x: 'source) : unit =
+    static member inline iter (f: 't -> unit) (x: ^I) : unit =
         Internal.Iterate.Invoke f x
 
-    static member inline iteri (f: int -> 't -> unit) (x: 'source) : unit =
+    static member inline iteri (f: int -> 't -> unit) (x: ^I) : unit =
         Internal.IterateIndexed.Invoke f x
 
-    static member inline map (f: 't -> 'u) (x: 'source) : 'result =
-        Internal.Map.Invoke f x
+    static member inline map (f: 't -> 'u) (x: ^I) = Internal.Map.Invoke f x
 
-    static member inline mapi (f: int -> 't -> unit) (x: 'source) : unit =
+    static member inline mapi (f: int -> 't -> 'u) (x: ^I) =
         Internal.MapIndexed.Invoke f x
 
-    static member inline len(x: 'source) : 'result = Internal.Collections.Length x
+    static member inline len(source: 't) : int =
+        Internal.Length.Invoke (fun _ -> ()) source
