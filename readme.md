@@ -55,6 +55,4 @@ let tree2: Tree<int> = tree1 |> map (fun v -> v + 1)
 let itertree = tree1 |> iter (fun v -> print v)
 ```
 
-#### more notes
-
 Most important remember to have (f#)un! :)
