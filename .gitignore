@@ -484,3 +484,4 @@ $RECYCLE.BIN/
 *.swp
 fable_modules
 *.fs.js
+*.fs.js.map
