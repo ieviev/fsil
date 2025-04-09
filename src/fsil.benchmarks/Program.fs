@@ -5,9 +5,14 @@ open BenchmarkDotNet.Running
 [<ShortRunJob>]
 type Benches() =
 
-    member val SomeOption: option<int> = Unchecked.defaultof<_> with get, set
-    member val SomeValueOption: voption<int> = Unchecked.defaultof<_> with get, set
-    member val SomeArray: array<int> = Unchecked.defaultof<_> with get, set
+    member val SomeOption: option<int> =
+        Unchecked.defaultof<_> with get, set
+
+    member val SomeValueOption: voption<int> =
+        Unchecked.defaultof<_> with get, set
+
+    member val SomeArray: array<int> =
+        Unchecked.defaultof<_> with get, set
 
     [<GlobalSetup>]
     member this.Setup() =
@@ -70,22 +75,54 @@ type Benches() =
     member self.FSharpPlusArrayIter() =
         let mutable result = 0
 
-        self.SomeArray |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
-        self.SomeArray |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
-        self.SomeArray |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
-        self.SomeArray |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
-        self.SomeArray |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
+        self.SomeArray
+        |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
+
+        self.SomeArray
+        |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
+
+        self.SomeArray
+        |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
+
+        self.SomeArray
+        |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
+
+        self.SomeArray
+        |> FSharpPlus.Operators.iter (fun v -> result <- result + v)
 
 
     [<Benchmark>]
     member self.FsilArrayIter() =
         let mutable result = 0
 
-        self.SomeArray |> Fsil.Abstract.iter (fun v -> result <- result + v)
-        self.SomeArray |> Fsil.Abstract.iter (fun v -> result <- result + v)
-        self.SomeArray |> Fsil.Abstract.iter (fun v -> result <- result + v)
-        self.SomeArray |> Fsil.Abstract.iter (fun v -> result <- result + v)
-        self.SomeArray |> Fsil.Abstract.iter (fun v -> result <- result + v)
+        self.SomeArray
+        |> Fsil.Abstract.iter (fun v -> result <- result + v)
+
+        self.SomeArray
+        |> Fsil.Abstract.iter (fun v -> result <- result + v)
+
+        self.SomeArray
+        |> Fsil.Abstract.iter (fun v -> result <- result + v)
+
+        self.SomeArray
+        |> Fsil.Abstract.iter (fun v -> result <- result + v)
+
+        self.SomeArray
+        |> Fsil.Abstract.iter (fun v -> result <- result + v)
+
+
+    [<Benchmark>]
+    member self.FSharpPlusFold() =
+        self.SomeArray
+        |> FSharpPlus.Operators.fold
+            (fun acc v -> if v % 2 = 0 then acc + 1 else acc)
+            0
+
+    [<Benchmark>]
+    member self.FsilFold() =
+        self.SomeArray
+        |> Fsil.Abstract.fold 0 (fun acc v ->
+            if v % 2 = 0 then acc + 1 else acc)
 
 
 BenchmarkRunner.Run(typeof<Benches>) |> ignore

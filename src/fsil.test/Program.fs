@@ -9,26 +9,21 @@ type Tree<'T> =
     | Leaf of 'T
     | Node of 'T * Tree<'T> * Tree<'T>
 
-    static member Map((self: Tree<'T>, fn: 'T -> 'U)) : Tree<'U> =
+    static member Map(self: Tree<'T>, fn: 'T -> 'U) : Tree<'U> =
         match self with
         | Leaf x -> Leaf(fn x)
         | Node(v, l, r) ->
-            let new_l = Tree.Map((l, fn))
-            let new_r = Tree.Map((r, fn))
+            let new_l = Tree.Map(l, fn)
+            let new_r = Tree.Map(r, fn)
             Node(fn v, new_l, new_r)
 
-    static member Iterate((self: Tree<'T>, fn: 'T -> unit)) : unit =
+    static member Iterate(self: Tree<'T>, fn: 'T -> unit) : unit =
         match self with
         | Leaf x -> fn x
         | Node(v, l, r) ->
             fn v
-            Tree.Iterate((l, fn))
-            Tree.Iterate((r, fn))
-
-    static member IterateIndexed((self: Tree<'T>, fn: int -> 'T -> unit)) : unit = ()
-
-    static member MapIndexed((self: Tree<'T>, fn: int -> 'T -> 'U)) : Tree<'U> =
-        Leaf Unchecked.defaultof<_>
+            Tree.Iterate(l, fn)
+            Tree.Iterate(r, fn)
 
     static member Length((self: Tree<'T>, _f: unit -> unit)) : int =
         let mutable len_total = 0
@@ -42,6 +37,7 @@ type Tree<'T> =
         : Tree< ^inner > =
         let inner_default: 'inner = _default ()
         Leaf(inner_default)
+
 
 // ensure all basic members exist, compile and run
 let inline basic_collection_tests (data: ^a) : Test =
@@ -59,11 +55,15 @@ let inline basic_collection_tests (data: ^a) : Test =
             ()
         }
         test "mapi" {
-            let mapi_: 'd = data |> mapi (fun (i: int) v -> ())
+            let mapi_ = data |> mapi (fun (i: int) v -> v + 1)
             ()
         }
         test "len" {
             let len_: int = len data
+            ()
+        }
+        test "is_empty" {
+            let empty: bool = is_empty data
             ()
         }
         test "default" {
@@ -73,14 +73,19 @@ let inline basic_collection_tests (data: ^a) : Test =
     ]
 
 open Fsil.Internal
+open System.Runtime.InteropServices
 
 let testRoot =
     testList "root" [
-        basic_collection_tests (ResizeArray [ 1; 2; 3 ])
+        let ra = ResizeArray [ 1; 2; 3 ]
+        let sp = span ra
+        siter (sp, (fun v -> ()))
+
         basic_collection_tests [| 1; 2; 3 |]
         basic_collection_tests [ 1; 2; 3 ]
         basic_collection_tests (Some 1)
         basic_collection_tests (ValueSome 1)
+
         test "tree_tests" {
             let data = (Tree.Node(1, Tree.Leaf 1, Tree.Leaf 2))
             data |> iter (fun v -> ())
@@ -91,6 +96,7 @@ let testRoot =
             let _ = _default<Tree<int>> ()
             ()
         }
+
         test "defaults" {
             let _ = _default<int> ()
             let _ = _default<uint> ()
@@ -100,7 +106,6 @@ let testRoot =
             ()
         }
     ]
-
 
 [<EntryPoint>]
 let main argv = runTestsWithCLIArgs [] argv testRoot
