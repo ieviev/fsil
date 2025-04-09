@@ -53,7 +53,7 @@ type Tree<'T> =
 let tree1 = Leaf 1
 let iter = tree1 |> iter (fun v -> print v)
 let mapped: Tree<int> = tree1 |> map (fun v -> v + 1)
-// these implementations are generated from Iterate
+// these implementations are generated from Iterate and Map
 let iteri = tree1 |> iteri (fun idx v -> print v)
 let mapped: Tree<int> = tree1 |> mapi (fun idx v -> idx + v + 1)
 let sum = tree1 |> fold 0 (fun acc v -> acc + 1 )
