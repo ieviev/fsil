@@ -38,22 +38,23 @@ type Tree<'T> =
         match self with
         | Leaf x -> Leaf(fn x)
         | Node(v, l, r) ->
-            let new_l = Tree.Map((l, fn))
-            let new_r = Tree.Map((r, fn))
+            let new_l = Tree.Map(l, fn)
+            let new_r = Tree.Map(r, fn)
             Node(fn v, new_l, new_r)
 
     static member Iterate(self: Tree<'T>, fn: 'T -> unit) : unit =
         match self with
         | Leaf x -> fn x
         | Node(v, l, r) ->
+            Tree.Iterate(l, fn)
             fn v
-            Tree.Iterate((l, fn))
-            Tree.Iterate((r, fn))
+            Tree.Iterate(r, fn)
 
 let tree1 = Leaf 1
 let iter = tree1 |> iter (fun v -> print v)
 let mapped: Tree<int> = tree1 |> map (fun v -> v + 1)
 // these implementations are generated from Iterate and Map
+// so you get them "for free"
 let iteri = tree1 |> iteri (fun idx v -> print v)
 let mapped: Tree<int> = tree1 |> mapi (fun idx v -> idx + v + 1)
 let sum = tree1 |> fold 0 (fun acc v -> acc + 1 )

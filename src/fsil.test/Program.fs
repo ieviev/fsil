@@ -21,8 +21,8 @@ type Tree<'T> =
         match self with
         | Leaf x -> fn x
         | Node(v, l, r) ->
-            fn v
             Tree.Iterate(l, fn)
+            fn v
             Tree.Iterate(r, fn)
 
     static member Length((self: Tree<'T>, _f: unit -> unit)) : int =
@@ -87,13 +87,16 @@ let testRoot =
         basic_collection_tests (ValueSome 1)
 
         test "tree_tests" {
-            let data = (Tree.Node(1, Tree.Leaf 1, Tree.Leaf 2))
-            data |> iter (fun v -> ())
-            data |> iteri (fun (i: int) v -> ())
-            let _ = data |> map (fun v -> v + 1)
-            let _ = data |> mapi (fun (i: int) v -> ())
-            let _ = len data
-            let _ = _default<Tree<int>> ()
+            let data = (Tree.Node(15, Tree.Leaf 2, Tree.Leaf 21))
+            let tree_count = data |> fold 0 (fun acc _ -> acc + 1)
+            eq tree_count 3
+            let tree_sum = data |> fold 0 (fun acc v -> acc + v)
+            eq tree_sum 38
+            let mappedx2 = data |> map (fun v -> v * 2)
+            eq (Tree.Node(30, Tree.Leaf 4, Tree.Leaf 42)) mappedx2
+            eq 3 (len data)
+            let indices = [| 0; 1; 2 |]
+            data |> iteri (fun (i: int) v -> eq indices[i] i)
             ()
         }
 

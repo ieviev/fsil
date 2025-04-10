@@ -289,12 +289,12 @@ module Internal =
             List.map f x
 
         static member inline Invoke
-            (mapping: 't -> 'u, source: ^I)
-            : 'Result =
+            ([<InlineIfLambda>] mapping: 't -> 'u, source: ^I)
+            : ^Result =
 
             let inline call (source: ^I) =
                 ((^I or Map): (static member Map:
-                    ^I * (^t -> ^u) -> 'Result) (source, mapping))
+                    ^I * (^t -> ^u) -> ^Result) (source, mapping))
 
             call source
 
