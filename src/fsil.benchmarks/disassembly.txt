@@ -16,7 +16,7 @@ using Microsoft.FSharp.Core;
 [assembly: AssemblyCompany("fsil.benchmarks")]
 [assembly: AssemblyConfiguration("Release")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: AssemblyInformationalVersion("1.0.0+55bbd2fc3718af15fb55f26b2c42f04bbee72d1e")]
+[assembly: AssemblyInformationalVersion("1.0.0+34ebebf4b424ab8bfda6d72bf1488832c7e31155")]
 [assembly: AssemblyProduct("fsil.benchmarks")]
 [assembly: AssemblyTitle("fsil.benchmarks")]
 [assembly: TargetFramework(".NETCoreApp,Version=v9.0", FrameworkDisplayName = ".NET 9.0")]
@@ -100,42 +100,42 @@ public static class Program
 			SomeArray@ = new int[10] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 		}
 
-		[Benchmark(24, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		[Benchmark(25, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
 		public int FSharpPlusOptionMap()
 		{
 			FSharpOption<int> someOption@ = SomeOption@;
 			FSharpFunc<int, int> @_instance;
-			@_instance = FSharpPlusOptionMap@27.@_instance;
+			@_instance = FSharpPlusOptionMap@28.@_instance;
 			Map mthd = null;
 			FSharpOption<int> fSharpOption = null;
 			FSharpOption<int> item = Map.Map(new Tuple<FSharpOption<int>, FSharpFunc<int, int>>(someOption@, @_instance), mthd);
-			@_instance = FSharpPlusOptionMap@28-1.@_instance;
+			@_instance = FSharpPlusOptionMap@29-1.@_instance;
 			mthd = null;
 			someOption@ = null;
 			FSharpOption<int> item2 = Map.Map(new Tuple<FSharpOption<int>, FSharpFunc<int, int>>(item, @_instance), mthd);
-			@_instance = FSharpPlusOptionMap@29-2.@_instance;
+			@_instance = FSharpPlusOptionMap@30-2.@_instance;
 			mthd = null;
 			item = null;
 			FSharpOption<int> item3 = Map.Map(new Tuple<FSharpOption<int>, FSharpFunc<int, int>>(item2, @_instance), mthd);
-			@_instance = FSharpPlusOptionMap@30-3.@_instance;
+			@_instance = FSharpPlusOptionMap@31-3.@_instance;
 			mthd = null;
 			item2 = null;
 			FSharpOption<int> item4 = Map.Map(new Tuple<FSharpOption<int>, FSharpFunc<int, int>>(item3, @_instance), mthd);
-			@_instance = FSharpPlusOptionMap@31-4.@_instance;
+			@_instance = FSharpPlusOptionMap@32-4.@_instance;
 			mthd = null;
 			item3 = null;
 			FSharpOption<int> item5 = Map.Map(new Tuple<FSharpOption<int>, FSharpFunc<int, int>>(item4, @_instance), mthd);
-			@_instance = FSharpPlusOptionMap@32-5.@_instance;
+			@_instance = FSharpPlusOptionMap@33-5.@_instance;
 			mthd = null;
 			item4 = null;
 			FSharpOption<int> item6 = Map.Map(new Tuple<FSharpOption<int>, FSharpFunc<int, int>>(item5, @_instance), mthd);
-			@_instance = FSharpPlusOptionMap@33-6.@_instance;
+			@_instance = FSharpPlusOptionMap@34-6.@_instance;
 			mthd = null;
 			item5 = null;
 			return Map.Map(new Tuple<FSharpOption<int>, FSharpFunc<int, int>>(item6, @_instance), mthd)?.Value ?? 5;
 		}
 
-		[Benchmark(37, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		[Benchmark(38, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
 		public int FsilOptionMap()
 		{
 			FSharpOption<int> someOption@ = SomeOption@;
@@ -225,36 +225,36 @@ public static class Program
 			return ((FSharpOption<int>)obj7)?.Value ?? 5;
 		}
 
-		[Benchmark(49, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		[Benchmark(50, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
 		public int FSharpPlusValueOptionMap()
 		{
 			FSharpValueOption<int> someValueOption@ = SomeValueOption@;
 			FSharpFunc<int, int> @_instance;
-			@_instance = FSharpPlusValueOptionMap@52.@_instance;
+			@_instance = FSharpPlusValueOptionMap@53.@_instance;
 			Map mthd = null;
 			FSharpValueOption<int> fSharpValueOption = default(FSharpValueOption<int>);
 			FSharpValueOption<int> item = Map.Map(new Tuple<FSharpValueOption<int>, FSharpFunc<int, int>>(someValueOption@, @_instance), mthd);
-			@_instance = FSharpPlusValueOptionMap@53-1.@_instance;
+			@_instance = FSharpPlusValueOptionMap@54-1.@_instance;
 			mthd = null;
 			someValueOption@ = default(FSharpValueOption<int>);
 			FSharpValueOption<int> item2 = Map.Map(new Tuple<FSharpValueOption<int>, FSharpFunc<int, int>>(item, @_instance), mthd);
-			@_instance = FSharpPlusValueOptionMap@54-2.@_instance;
+			@_instance = FSharpPlusValueOptionMap@55-2.@_instance;
 			mthd = null;
 			item = default(FSharpValueOption<int>);
 			FSharpValueOption<int> item3 = Map.Map(new Tuple<FSharpValueOption<int>, FSharpFunc<int, int>>(item2, @_instance), mthd);
-			@_instance = FSharpPlusValueOptionMap@55-3.@_instance;
+			@_instance = FSharpPlusValueOptionMap@56-3.@_instance;
 			mthd = null;
 			item2 = default(FSharpValueOption<int>);
 			FSharpValueOption<int> item4 = Map.Map(new Tuple<FSharpValueOption<int>, FSharpFunc<int, int>>(item3, @_instance), mthd);
-			@_instance = FSharpPlusValueOptionMap@56-4.@_instance;
+			@_instance = FSharpPlusValueOptionMap@57-4.@_instance;
 			mthd = null;
 			item3 = default(FSharpValueOption<int>);
 			FSharpValueOption<int> item5 = Map.Map(new Tuple<FSharpValueOption<int>, FSharpFunc<int, int>>(item4, @_instance), mthd);
-			@_instance = FSharpPlusValueOptionMap@57-5.@_instance;
+			@_instance = FSharpPlusValueOptionMap@58-5.@_instance;
 			mthd = null;
 			item4 = default(FSharpValueOption<int>);
 			FSharpValueOption<int> item6 = Map.Map(new Tuple<FSharpValueOption<int>, FSharpFunc<int, int>>(item5, @_instance), mthd);
-			@_instance = FSharpPlusValueOptionMap@58-6.@_instance;
+			@_instance = FSharpPlusValueOptionMap@59-6.@_instance;
 			mthd = null;
 			item5 = default(FSharpValueOption<int>);
 			FSharpValueOption<int> fSharpValueOption2 = Map.Map(new Tuple<FSharpValueOption<int>, FSharpFunc<int, int>>(item6, @_instance), mthd);
@@ -265,7 +265,7 @@ public static class Program
 			return fSharpValueOption2.Item;
 		}
 
-		[Benchmark(61, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		[Benchmark(62, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
 		public int FsilValueOptionMap()
 		{
 			FSharpValueOption<int> someValueOption@ = SomeValueOption@;
@@ -353,33 +353,33 @@ public static class Program
 			return fSharpValueOption14.Item;
 		}
 
-		[Benchmark(74, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		[Benchmark(75, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
 		public void FSharpPlusArrayIter()
 		{
 			FSharpRef<int> result = new FSharpRef<int>(0);
 			int[] someArray@ = SomeArray@;
-			FSharpFunc<int, Unit> action = new FSharpPlusArrayIter@78(result);
+			FSharpFunc<int, Unit> action = new FSharpPlusArrayIter@80(result);
 			Iterate iterate = null;
 			Iterate.Iterate(someArray@, action);
 			someArray@ = SomeArray@;
-			action = new FSharpPlusArrayIter@79-1(result);
+			action = new FSharpPlusArrayIter@83-1(result);
 			iterate = null;
 			Iterate.Iterate(someArray@, action);
 			someArray@ = SomeArray@;
-			action = new FSharpPlusArrayIter@80-2(result);
+			action = new FSharpPlusArrayIter@86-2(result);
 			iterate = null;
 			Iterate.Iterate(someArray@, action);
 			someArray@ = SomeArray@;
-			action = new FSharpPlusArrayIter@81-3(result);
+			action = new FSharpPlusArrayIter@89-3(result);
 			iterate = null;
 			Iterate.Iterate(someArray@, action);
 			someArray@ = SomeArray@;
-			action = new FSharpPlusArrayIter@82-4(result);
+			action = new FSharpPlusArrayIter@92-4(result);
 			iterate = null;
 			Iterate.Iterate(someArray@, action);
 		}
 
-		[Benchmark(85, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		[Benchmark(95, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
 		public void FsilArrayIter()
 		{
 			int num = 0;
@@ -410,40 +410,122 @@ public static class Program
 			}
 		}
 
-		[Benchmark(96, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		[Benchmark(115, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
 		public int FSharpPlusFold()
 		{
-			int num = 0;
 			int[] someArray@ = SomeArray@;
 			FSharpFunc<int, FSharpFunc<int, int>> @_instance;
-			@_instance = FSharpPlusFold@103.@_instance;
+			@_instance = FSharpPlusFold@119.@_instance;
 			Fold fold = null;
 			return ArrayModule.Fold(@_instance, 0, someArray@);
 		}
 
-		[Benchmark(111, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		[Benchmark(122, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
 		public int FsilFold()
 		{
-			int num = 0;
 			int[] someArray@ = SomeArray@;
-			int num2 = 0;
-			foreach (int num3 in someArray@)
+			int num = 0;
+			foreach (int num2 in someArray@)
 			{
-				int num4 = num2;
-				num2 = ((num3 % 2 != 0) ? num4 : (num4 + 1));
+				int num3 = num;
+				num = ((num2 % 2 != 0) ? num3 : (num3 + 1));
 			}
-			return num2;
+			return num;
+		}
+
+		[Benchmark(129, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		public void FsilSpanIter()
+		{
+			int num = 0;
+			Span<int> span = SomeArray@.AsSpan();
+			for (int i = 0; i < span.Length; i++)
+			{
+				int num2 = span[i];
+				num += num2;
+			}
+			for (int i = 0; i < span.Length; i++)
+			{
+				int num2 = span[i];
+				num += num2;
+			}
+			for (int i = 0; i < span.Length; i++)
+			{
+				int num2 = span[i];
+				num += num2;
+			}
+			for (int i = 0; i < span.Length; i++)
+			{
+				int num2 = span[i];
+				num += num2;
+			}
+			for (int i = 0; i < span.Length; i++)
+			{
+				int num2 = span[i];
+				num += num2;
+			}
+		}
+
+		[Benchmark(139, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		public void FsilForall()
+		{
+			int[] someArray@ = SomeArray@;
+			bool flag = true;
+			ref bool reference = ref flag;
+			int num = 0;
+			while (reference && num < someArray@.Length)
+			{
+				int num2 = someArray@[num];
+				flag = num2 > 1;
+				num++;
+			}
+			bool flag2 = flag;
+			bool flag3 = true;
+			reference = ref flag3;
+			num = 0;
+			while (reference && num < someArray@.Length)
+			{
+				int num2 = someArray@[num];
+				flag3 = num2 > 2;
+				num++;
+			}
+			flag = flag3;
+		}
+
+		[Benchmark(146, "/home/ian/f/myrepos/fsil/src/fsil.benchmarks/Program.fs")]
+		public void FsilExists()
+		{
+			int[] someArray@ = SomeArray@;
+			bool flag = true;
+			ref bool reference = ref flag;
+			int num = 0;
+			while (reference && num < someArray@.Length)
+			{
+				int num2 = someArray@[num];
+				flag = num2 <= 1;
+				num++;
+			}
+			bool flag2 = !flag;
+			bool flag3 = true;
+			reference = ref flag3;
+			num = 0;
+			while (reference && num < someArray@.Length)
+			{
+				int num2 = someArray@[num];
+				flag3 = num2 <= 2;
+				num++;
+			}
+			flag = !flag3;
 		}
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusOptionMap@27 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusOptionMap@28 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusOptionMap@27 @_instance = new FSharpPlusOptionMap@27();
+		internal static readonly FSharpPlusOptionMap@28 @_instance = new FSharpPlusOptionMap@28();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusOptionMap@27()
+		internal FSharpPlusOptionMap@28()
 		{
 		}
 
@@ -454,13 +536,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusOptionMap@28-1 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusOptionMap@29-1 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusOptionMap@28-1 @_instance = new FSharpPlusOptionMap@28-1();
+		internal static readonly FSharpPlusOptionMap@29-1 @_instance = new FSharpPlusOptionMap@29-1();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusOptionMap@28-1()
+		internal FSharpPlusOptionMap@29-1()
 		{
 		}
 
@@ -471,13 +553,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusOptionMap@29-2 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusOptionMap@30-2 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusOptionMap@29-2 @_instance = new FSharpPlusOptionMap@29-2();
+		internal static readonly FSharpPlusOptionMap@30-2 @_instance = new FSharpPlusOptionMap@30-2();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusOptionMap@29-2()
+		internal FSharpPlusOptionMap@30-2()
 		{
 		}
 
@@ -488,13 +570,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusOptionMap@30-3 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusOptionMap@31-3 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusOptionMap@30-3 @_instance = new FSharpPlusOptionMap@30-3();
+		internal static readonly FSharpPlusOptionMap@31-3 @_instance = new FSharpPlusOptionMap@31-3();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusOptionMap@30-3()
+		internal FSharpPlusOptionMap@31-3()
 		{
 		}
 
@@ -505,13 +587,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusOptionMap@31-4 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusOptionMap@32-4 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusOptionMap@31-4 @_instance = new FSharpPlusOptionMap@31-4();
+		internal static readonly FSharpPlusOptionMap@32-4 @_instance = new FSharpPlusOptionMap@32-4();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusOptionMap@31-4()
+		internal FSharpPlusOptionMap@32-4()
 		{
 		}
 
@@ -522,13 +604,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusOptionMap@32-5 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusOptionMap@33-5 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusOptionMap@32-5 @_instance = new FSharpPlusOptionMap@32-5();
+		internal static readonly FSharpPlusOptionMap@33-5 @_instance = new FSharpPlusOptionMap@33-5();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusOptionMap@32-5()
+		internal FSharpPlusOptionMap@33-5()
 		{
 		}
 
@@ -539,13 +621,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusOptionMap@33-6 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusOptionMap@34-6 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusOptionMap@33-6 @_instance = new FSharpPlusOptionMap@33-6();
+		internal static readonly FSharpPlusOptionMap@34-6 @_instance = new FSharpPlusOptionMap@34-6();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusOptionMap@33-6()
+		internal FSharpPlusOptionMap@34-6()
 		{
 		}
 
@@ -556,13 +638,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusValueOptionMap@52 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusValueOptionMap@53 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusValueOptionMap@52 @_instance = new FSharpPlusValueOptionMap@52();
+		internal static readonly FSharpPlusValueOptionMap@53 @_instance = new FSharpPlusValueOptionMap@53();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusValueOptionMap@52()
+		internal FSharpPlusValueOptionMap@53()
 		{
 		}
 
@@ -573,13 +655,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusValueOptionMap@53-1 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusValueOptionMap@54-1 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusValueOptionMap@53-1 @_instance = new FSharpPlusValueOptionMap@53-1();
+		internal static readonly FSharpPlusValueOptionMap@54-1 @_instance = new FSharpPlusValueOptionMap@54-1();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusValueOptionMap@53-1()
+		internal FSharpPlusValueOptionMap@54-1()
 		{
 		}
 
@@ -590,13 +672,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusValueOptionMap@54-2 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusValueOptionMap@55-2 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusValueOptionMap@54-2 @_instance = new FSharpPlusValueOptionMap@54-2();
+		internal static readonly FSharpPlusValueOptionMap@55-2 @_instance = new FSharpPlusValueOptionMap@55-2();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusValueOptionMap@54-2()
+		internal FSharpPlusValueOptionMap@55-2()
 		{
 		}
 
@@ -607,13 +689,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusValueOptionMap@55-3 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusValueOptionMap@56-3 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusValueOptionMap@55-3 @_instance = new FSharpPlusValueOptionMap@55-3();
+		internal static readonly FSharpPlusValueOptionMap@56-3 @_instance = new FSharpPlusValueOptionMap@56-3();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusValueOptionMap@55-3()
+		internal FSharpPlusValueOptionMap@56-3()
 		{
 		}
 
@@ -624,13 +706,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusValueOptionMap@56-4 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusValueOptionMap@57-4 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusValueOptionMap@56-4 @_instance = new FSharpPlusValueOptionMap@56-4();
+		internal static readonly FSharpPlusValueOptionMap@57-4 @_instance = new FSharpPlusValueOptionMap@57-4();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusValueOptionMap@56-4()
+		internal FSharpPlusValueOptionMap@57-4()
 		{
 		}
 
@@ -641,13 +723,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusValueOptionMap@57-5 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusValueOptionMap@58-5 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusValueOptionMap@57-5 @_instance = new FSharpPlusValueOptionMap@57-5();
+		internal static readonly FSharpPlusValueOptionMap@58-5 @_instance = new FSharpPlusValueOptionMap@58-5();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusValueOptionMap@57-5()
+		internal FSharpPlusValueOptionMap@58-5()
 		{
 		}
 
@@ -658,13 +740,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusValueOptionMap@58-6 : FSharpFunc<int, int>
+	internal sealed class FSharpPlusValueOptionMap@59-6 : FSharpFunc<int, int>
 	{
-		internal static readonly FSharpPlusValueOptionMap@58-6 @_instance = new FSharpPlusValueOptionMap@58-6();
+		internal static readonly FSharpPlusValueOptionMap@59-6 @_instance = new FSharpPlusValueOptionMap@59-6();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusValueOptionMap@58-6()
+		internal FSharpPlusValueOptionMap@59-6()
 		{
 		}
 
@@ -675,13 +757,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusArrayIter@78 : FSharpFunc<int, Unit>
+	internal sealed class FSharpPlusArrayIter@80 : FSharpFunc<int, Unit>
 	{
 		public FSharpRef<int> result;
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusArrayIter@78(FSharpRef<int> result)
+		internal FSharpPlusArrayIter@80(FSharpRef<int> result)
 		{
 			this.result = result;
 		}
@@ -694,13 +776,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusArrayIter@79-1 : FSharpFunc<int, Unit>
+	internal sealed class FSharpPlusArrayIter@83-1 : FSharpFunc<int, Unit>
 	{
 		public FSharpRef<int> result;
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusArrayIter@79-1(FSharpRef<int> result)
+		internal FSharpPlusArrayIter@83-1(FSharpRef<int> result)
 		{
 			this.result = result;
 		}
@@ -713,13 +795,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusArrayIter@80-2 : FSharpFunc<int, Unit>
+	internal sealed class FSharpPlusArrayIter@86-2 : FSharpFunc<int, Unit>
 	{
 		public FSharpRef<int> result;
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusArrayIter@80-2(FSharpRef<int> result)
+		internal FSharpPlusArrayIter@86-2(FSharpRef<int> result)
 		{
 			this.result = result;
 		}
@@ -732,13 +814,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusArrayIter@81-3 : FSharpFunc<int, Unit>
+	internal sealed class FSharpPlusArrayIter@89-3 : FSharpFunc<int, Unit>
 	{
 		public FSharpRef<int> result;
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusArrayIter@81-3(FSharpRef<int> result)
+		internal FSharpPlusArrayIter@89-3(FSharpRef<int> result)
 		{
 			this.result = result;
 		}
@@ -751,13 +833,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusArrayIter@82-4 : FSharpFunc<int, Unit>
+	internal sealed class FSharpPlusArrayIter@92-4 : FSharpFunc<int, Unit>
 	{
 		public FSharpRef<int> result;
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusArrayIter@82-4(FSharpRef<int> result)
+		internal FSharpPlusArrayIter@92-4(FSharpRef<int> result)
 		{
 			this.result = result;
 		}
@@ -770,13 +852,13 @@ public static class Program
 	}
 
 	[Serializable]
-	internal sealed class FSharpPlusFold@103 : OptimizedClosures.FSharpFunc<int, int, int>
+	internal sealed class FSharpPlusFold@119 : OptimizedClosures.FSharpFunc<int, int, int>
 	{
-		internal static readonly FSharpPlusFold@103 @_instance = new FSharpPlusFold@103();
+		internal static readonly FSharpPlusFold@119 @_instance = new FSharpPlusFold@119();
 
 		[CompilerGenerated]
 		[DebuggerNonUserCode]
-		internal FSharpPlusFold@103()
+		internal FSharpPlusFold@119()
 		{
 		}
 
@@ -791,7 +873,7 @@ public static class Program
 	}
 
 	[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-	internal static <PrivateImplementationDetails$fsil-benchmarks>.T20266_40Bytes@ field20267@/* Not supported: data(01 00 00 00 02 00 00 00 03 00 00 00 04 00 00 00 05 00 00 00 06 00 00 00 07 00 00 00 08 00 00 00 09 00 00 00 0A 00 00 00) */;
+	internal static <PrivateImplementationDetails$fsil-benchmarks>.T20801_40Bytes@ field20802@/* Not supported: data(01 00 00 00 02 00 00 00 03 00 00 00 04 00 00 00 05 00 00 00 06 00 00 00 07 00 00 00 08 00 00 00 09 00 00 00 0A 00 00 00) */;
 
 	[CompilationMapping(SourceConstructFlags.Value)]
 	internal static Summary arg@1 => $Program.arg@1;
@@ -835,7 +917,7 @@ namespace <StartupCode$fsil-benchmarks>.$Fsil.benchmarks
 internal static class <PrivateImplementationDetails$fsil-benchmarks>
 {
 	[StructLayout(LayoutKind.Explicit, Size = 40)]
-	internal struct T20266_40Bytes@
+	internal struct T20801_40Bytes@
 	{
 	}
 }

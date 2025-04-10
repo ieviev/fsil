@@ -25,6 +25,23 @@ type Tree<'T> =
             fn v
             Tree.Iterate(r, fn)
 
+    static member IterateWhile
+        (self: Tree<'T>, cond: byref<bool>, fn: 'T -> unit)
+        : unit =
+        match self with
+        | Leaf x ->
+            if cond then
+                fn x
+        | Node(v, l, r) ->
+            if cond then
+                Tree.IterateWhile(l, &cond, fn)
+
+            if cond then
+                fn v
+
+            if cond then
+                Tree.IterateWhile(r, &cond, fn)
+
     static member Length((self: Tree<'T>, _f: unit -> unit)) : int =
         let mutable len_total = 0
         self |> iter (fun _ -> len_total <- len_total + 1)
@@ -78,8 +95,7 @@ open System.Runtime.InteropServices
 let testRoot =
     testList "root" [
         let ra = ResizeArray [ 1; 2; 3 ]
-        let sp = span ra
-        siter (sp, (fun v -> ()))
+        // let sp = span ra
 
         basic_collection_tests [| 1; 2; 3 |]
         basic_collection_tests [ 1; 2; 3 ]
@@ -107,6 +123,21 @@ let testRoot =
             let _ = _default<bool> ()
             let _ = _default<byte> ()
             ()
+        }
+
+        test "quantifiers" {
+            let data = (Tree.Node(15, Tree.Leaf 2, Tree.Leaf 21))
+            eq false (data |> forall (fun v -> v > 2))
+            eq true (data |> forall (fun v -> v >= 2))
+            eq true (data |> exists (fun v -> v = 15))
+            eq false (data |> exists (fun v -> v = 16))
+
+            let data2 = [| 15; 2; 21 |]
+
+            eq false (data2 |> forall (fun v -> v > 2))
+            eq true (data2 |> forall (fun v -> v >= 2))
+            eq true (data2 |> exists (fun v -> v = 15))
+            eq false (data2 |> exists (fun v -> v = 16))
         }
     ]
 

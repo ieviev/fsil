@@ -1,5 +1,6 @@
 ﻿open BenchmarkDotNet.Attributes
 open BenchmarkDotNet.Running
+open System
 
 [<BenchmarkDotNet.Attributes.MemoryDiagnoser>]
 [<ShortRunJob>]
@@ -123,6 +124,32 @@ type Benches() =
         self.SomeArray
         |> Fsil.Abstract.fold 0 (fun acc v ->
             if v % 2 = 0 then acc + 1 else acc)
+
+
+    [<Benchmark>]
+    member self.FsilSpanIter() =
+        let mutable result = 0
+        let s = span self.SomeArray
+        siter (s, (fun v -> result <- result + v))
+        siter (s, (fun v -> result <- result + v))
+        siter (s, (fun v -> result <- result + v))
+        siter (s, (fun v -> result <- result + v))
+        siter (s, (fun v -> result <- result + v))
+
+    [<Benchmark>]
+    member self.FsilForall() =
+        let s = self.SomeArray
+        let tmp1 = s |> forall (fun v -> v > 1)
+        let tmp2 = s |> forall (fun v -> v > 2)
+        ()
+
+    [<Benchmark>]
+    member self.FsilExists() =
+        let s = self.SomeArray
+        let tmp1 = s |> exists (fun v -> v > 1)
+        let tmp2 = s |> exists (fun v -> v > 2)
+        ()
+
 
 
 BenchmarkRunner.Run(typeof<Benches>) |> ignore

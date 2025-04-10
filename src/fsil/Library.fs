@@ -163,7 +163,56 @@ module Internal =
 
             call source
 
+    [<AbstractClass; Sealed>]
+    type IterateWhile =
 
+        static member inline IterateWhile
+            (
+                x: 't[],
+                cond: byref<bool>,
+                [<InlineIfLambda>] f: 't -> unit
+            ) : unit =
+            let mutable i = 0
+
+            while cond && i < x.Length do
+                f x[i]
+                i <- i + 1
+
+        static member inline IterateWhile
+            (
+                x: Span<'t>,
+                cond: byref<bool>,
+                [<InlineIfLambda>] f: 't -> unit
+            ) : unit =
+            let mutable i = 0
+
+            while cond && i < x.Length do
+                f x[i]
+                i <- i + 1
+
+        static member inline IterateWhile
+            (
+                x: list<'t>,
+                cond: byref<bool>,
+                [<InlineIfLambda>] f: 't -> unit
+            ) : unit =
+            let mutable curr = x
+
+            while cond && not x.IsEmpty do
+                f curr.Head
+                curr <- curr.Tail
+
+
+        static member inline Invoke
+            (
+                source: 'I,
+                cond: byref<bool>,
+                [<InlineIfLambda>] action: 't -> unit
+            ) : unit =
+            ((^I or IterateWhile): (static member IterateWhile:
+                ^I * byref<bool> * (^t -> unit) -> unit) (source,
+                                                          &cond,
+                                                          action))
 
 
     [<AbstractClass; Sealed>]
@@ -209,7 +258,19 @@ module Internal =
                 f x[i]
                 i <- i + 1
 
+        static member inline Iterate
+            (
+                x: System.ReadOnlySpan<'t>,
+                [<InlineIfLambda>] f: 't -> unit
+            ) : unit =
+            let mutable i = 0
+
+            while i < x.Length do
+                f x[i]
+                i <- i + 1
+
         // this breaks down the type system
+        // would want to have ResizeArray here
         // static member inline Iterate
         //     (
         //         x: System.Collections.Generic.List<'t>,
@@ -249,6 +310,41 @@ module Internal =
                                                                               index
                                                                               + 1)))
 
+
+    [<AbstractClass; Sealed>]
+    type Exists =
+
+        static member inline Invoke
+            ([<InlineIfLambda>] pred: 't -> bool, source: ^I)
+            : bool =
+
+            let mutable notfound = true
+
+            ((^I or IterateWhile): (static member IterateWhile:
+                'I * byref<bool> * _ -> unit) (source,
+                                               &notfound,
+                                               (fun v ->
+                                                   notfound <-
+                                                       not (pred v))))
+
+            not notfound
+
+    [<AbstractClass; Sealed>]
+    type Forall =
+
+        static member inline Invoke
+            ([<InlineIfLambda>] pred: 't -> bool, source: ^I)
+            : bool =
+
+            let mutable notfound = true
+
+            ((^I or IterateWhile): (static member IterateWhile:
+                'I * byref<bool> * _ -> unit) (source,
+                                               &notfound,
+                                               (fun v ->
+                                                   notfound <- pred v)))
+
+            notfound
 
 
     [<AbstractClass; Sealed>]
@@ -392,9 +488,20 @@ module Abstract =
         : ^b =
         if is_some arg then value arg else or_else ()
 
+    let inline forall
+        ([<InlineIfLambdaAttribute>] f: 't -> bool)
+        (x: ^I)
+        : bool =
+        Internal.Forall.Invoke(f, x)
+
+    let inline exists
+        ([<InlineIfLambdaAttribute>] f: 't -> bool)
+        (x: ^I)
+        : bool =
+        Internal.Exists.Invoke(f, x)
 
     let inline iter
-        ([<InlineIfLambdaAttribute>] f: ^t -> unit)
+        ([<InlineIfLambdaAttribute>] f: 't -> unit)
         (x: ^I)
         : unit =
         Internal.Iterate.Invoke(f, x)
@@ -451,11 +558,11 @@ module Abstract =
     let inline print (x: obj) = stdout.WriteLine(x)
 #endif
 
-
 // overloads for byref/struct/other types
 // not as general but at least allowed in CIL
 [<AbstractClass; Sealed; AutoOpen>]
 type Abstract =
+#if !FABLE_COMPILER
     static member inline span(x: ResizeArray<'t>) : System.Span<'t> =
         System.Runtime.InteropServices.CollectionsMarshal.AsSpan(x)
 
@@ -468,14 +575,6 @@ type Abstract =
     static member inline siter
         (x: System.Span<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit) : unit =
         Internal.Iterate.Iterate(x, f)
-
-    static member inline siter
-        (x: ResizeArray<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit) : unit =
-        let mutable i = 0
-
-        while i < x.Count do
-            f x[i]
-            i <- i + 1
 
     static member inline siteri
         (
@@ -491,6 +590,39 @@ type Abstract =
                 index <- index + 1)
         )
 
+    // todo: some kind of simd lookups as well
+
+    static member inline sforall
+        (
+            x: System.Span<'t>,
+            [<InlineIfLambdaAttribute>] pred: 't -> bool
+        ) : bool =
+        let mutable notfound = true
+
+        Internal.IterateWhile.IterateWhile(
+            x,
+            &notfound,
+            (fun v -> notfound <- pred v)
+        )
+
+        notfound
+
+    static member inline sexists
+        (
+            x: System.Span<'t>,
+            [<InlineIfLambdaAttribute>] pred: 't -> bool
+        ) : bool =
+        let mutable notfound = true
+
+        Internal.IterateWhile.IterateWhile(
+            x,
+            &notfound,
+            (fun v -> notfound <- not (pred v))
+        )
+
+        notfound
+#endif
+
     static member inline siteri
         (
             x: ResizeArray<'t>,
@@ -500,4 +632,12 @@ type Abstract =
 
         while i < x.Count do
             f i x[i]
+            i <- i + 1
+
+    static member inline siter
+        (x: ResizeArray<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit) : unit =
+        let mutable i = 0
+
+        while i < x.Count do
+            f x[i]
             i <- i + 1
