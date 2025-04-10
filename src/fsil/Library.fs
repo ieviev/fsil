@@ -620,7 +620,7 @@ type Abstract =
             (fun v -> notfound <- not (pred v))
         )
 
-        notfound
+        not notfound
 #endif
 
     static member inline siteri

@@ -28,19 +28,17 @@ type Tree<'T> =
     static member IterateWhile
         (self: Tree<'T>, cond: byref<bool>, fn: 'T -> unit)
         : unit =
-        match self with
-        | Leaf x ->
-            if cond then
-                fn x
-        | Node(v, l, r) ->
-            if cond then
+        if cond then
+            match self with
+            | Leaf x -> fn x
+            | Node(v, l, r) ->
                 Tree.IterateWhile(l, &cond, fn)
 
-            if cond then
-                fn v
+                if cond then
+                    fn v
 
-            if cond then
-                Tree.IterateWhile(r, &cond, fn)
+                if cond then
+                    Tree.IterateWhile(r, &cond, fn)
 
     static member Length((self: Tree<'T>, _f: unit -> unit)) : int =
         let mutable len_total = 0
@@ -94,8 +92,7 @@ open System.Runtime.InteropServices
 
 let testRoot =
     testList "root" [
-        let ra = ResizeArray [ 1; 2; 3 ]
-        // let sp = span ra
+
 
         basic_collection_tests [| 1; 2; 3 |]
         basic_collection_tests [ 1; 2; 3 ]
@@ -138,6 +135,16 @@ let testRoot =
             eq true (data2 |> forall (fun v -> v >= 2))
             eq true (data2 |> exists (fun v -> v = 15))
             eq false (data2 |> exists (fun v -> v = 16))
+        }
+
+        test "spans" {
+            let data = ResizeArray [ 15; 2; 21 ]
+            let span_data = span data
+
+            eq false (sforall (span_data, (fun v -> v > 2)))
+            eq true (sforall (span_data, (fun v -> v >= 2)))
+            eq true (sexists (span_data, (fun v -> v = 15)))
+            eq false (sexists (span_data, (fun v -> v = 16)))
         }
     ]
 
