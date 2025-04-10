@@ -1,0 +1,8 @@
+<Project>  
+  <PropertyGroup>
+    
+  </PropertyGroup>
+  <PropertyGroup>
+      <UseArtifactsOutput>true</UseArtifactsOutput>
+   </PropertyGroup>
+</Project>
