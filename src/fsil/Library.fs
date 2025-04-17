@@ -572,11 +572,11 @@ type Abstract =
     static member inline span(x: string) : System.ReadOnlySpan<'t> =
         System.MemoryExtensions.AsSpan(x)
 
-    static member inline siter
+    static member inline span_iter
         (x: System.Span<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit) : unit =
         Internal.Iterate.Iterate(x, f)
 
-    static member inline siteri
+    static member inline span_iteri
         (
             x: System.Span<'t>,
             [<InlineIfLambdaAttribute>] f: int -> 't -> unit
@@ -592,7 +592,7 @@ type Abstract =
 
     // todo: some kind of simd lookups as well
 
-    static member inline sforall
+    static member inline span_forall
         (
             x: System.Span<'t>,
             [<InlineIfLambdaAttribute>] pred: 't -> bool
@@ -607,7 +607,7 @@ type Abstract =
 
         notfound
 
-    static member inline sexists
+    static member inline span_exists
         (
             x: System.Span<'t>,
             [<InlineIfLambdaAttribute>] pred: 't -> bool
@@ -623,21 +623,13 @@ type Abstract =
         not notfound
 #endif
 
-    static member inline siteri
+    static member inline span_iteri
         (
             x: ResizeArray<'t>,
             [<InlineIfLambdaAttribute>] f: int -> 't -> unit
         ) : unit =
-        let mutable i = 0
+        span_iteri (span x, f)
 
-        while i < x.Count do
-            f i x[i]
-            i <- i + 1
-
-    static member inline siter
+    static member inline span_iter
         (x: ResizeArray<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit) : unit =
-        let mutable i = 0
-
-        while i < x.Count do
-            f x[i]
-            i <- i + 1
+        span_iter (span x, f)

@@ -141,10 +141,10 @@ let testRoot =
             let data = ResizeArray [ 15; 2; 21 ]
             let span_data = span data
 
-            eq false (sforall (span_data, (fun v -> v > 2)))
-            eq true (sforall (span_data, (fun v -> v >= 2)))
-            eq true (sexists (span_data, (fun v -> v = 15)))
-            eq false (sexists (span_data, (fun v -> v = 16)))
+            eq false (span_forall (span_data, (fun v -> v > 2)))
+            eq true (span_forall (span_data, (fun v -> v >= 2)))
+            eq true (span_exists (span_data, (fun v -> v = 15)))
+            eq false (span_exists (span_data, (fun v -> v = 16)))
         }
     ]
 

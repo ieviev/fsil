@@ -130,11 +130,11 @@ type Benches() =
     member self.FsilSpanIter() =
         let mutable result = 0
         let s = span self.SomeArray
-        siter (s, (fun v -> result <- result + v))
-        siter (s, (fun v -> result <- result + v))
-        siter (s, (fun v -> result <- result + v))
-        siter (s, (fun v -> result <- result + v))
-        siter (s, (fun v -> result <- result + v))
+        span_iter (s, (fun v -> result <- result + v))
+        span_iter (s, (fun v -> result <- result + v))
+        span_iter (s, (fun v -> result <- result + v))
+        span_iter (s, (fun v -> result <- result + v))
+        span_iter (s, (fun v -> result <- result + v))
 
     [<Benchmark>]
     member self.FsilForall() =
