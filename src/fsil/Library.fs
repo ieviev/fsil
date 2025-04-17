@@ -576,6 +576,14 @@ type Abstract =
         (x: System.Span<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit) : unit =
         Internal.Iterate.Iterate(x, f)
 
+    static member inline span_iter_while
+        (
+            x: System.Span<'t>,
+            cond: byref<bool>,
+            [<InlineIfLambdaAttribute>] f: 't -> unit
+        ) : unit =
+        Internal.IterateWhile.IterateWhile(x, &cond, f)
+
     static member inline span_iteri
         (
             x: System.Span<'t>,
