@@ -14,7 +14,6 @@ module Internal =
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
 #endif
-    /// non-null default value
     [<AbstractClass; Sealed>]
     type Default =
 
