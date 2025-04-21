@@ -167,6 +167,8 @@ let testRoot =
             eq true (span_forall (span_data, (fun v -> v >= 2)))
             eq true (span_exists (span_data, (fun v -> v = 15)))
             eq false (span_exists (span_data, (fun v -> v = 16)))
+
+            
         }
 
         test "dict" {
@@ -197,3 +199,10 @@ let testRoot =
 
 [<EntryPoint>]
 let main argv = runTestsWithCLIArgs [] argv testRoot
+
+
+
+
+
+
+

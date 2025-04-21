@@ -25,7 +25,11 @@ The functions in this library compile down to **exactly the same form as the (op
 
 Currently this library contains a fairly small set of functions:
 
-`iter`, `iteri`, `map`, `mapi`, `is_some`, `is_none`, `some`, `none`, `value`, `len`, `enum`, `enumv`, `_default`, `default_with`, `zero`, `one`, `print`.
+`iter`, `iteri`, `iter_range`, `map`, `mapi`, `is_some`, `is_none`, `is_ok`, `some`, `none`, `try_item`, `value`, `len`, `enum`, `enumv`, `default_`, `default_inst`, `default_with`, `zero`, `one`, `print`, `forall`, `exists`, `fold`, `foldi`.
+
+there are also some functions for spans with separate function definitions due to their limitations: 
+
+`span_forall`, `span_exists`, `span_iter`... 
 
 You can also define your own implementations as static members. [here is an example](./src/fsil.test/Program.fs) for `iter` and `map` on a Tree, for documentation just look at the [source code itself](./src/fsil/Library.fs).
 
@@ -56,7 +60,7 @@ let mapped: Tree<int> = tree1 |> map (fun v -> v + 1)
 // these implementations are generated from Iterate and Map
 // so you get them "for free"
 let iteri = tree1 |> iteri (fun idx v -> print v)
-let mapped: Tree<int> = tree1 |> mapi (fun idx v -> idx + v + 1)
+let mapped2: Tree<int> = tree1 |> mapi (fun idx v -> idx + v + 1)
 let sum = tree1 |> fold 0 (fun acc v -> acc + 1 )
 let sum2 = tree1 |> foldi 0 (fun idx acc v -> acc + 1 )
 ```
