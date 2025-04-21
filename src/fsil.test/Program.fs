@@ -25,9 +25,7 @@ type Tree<'T> =
             fn v
             Tree.Iterate(r, fn)
 
-    static member IterateWhile
-        (self: Tree<'T>, cond: byref<bool>, fn: 'T -> unit)
-        : unit =
+    static member IterateWhile(self: Tree<'T>, cond: byref<bool>, fn: 'T -> unit) : unit =
         if cond then
             match self with
             | Leaf x -> fn x
@@ -55,7 +53,7 @@ type Tree<'T> =
 
 
 // ensure all basic members exist, compile and run
-let inline basic_collection_tests (data: ^a) : Test =
+let inline basic_collection_tests(data: ^a) : Test =
     testList $"collection tests {data.GetType().Name}" [
         test "iter" {
             let iter_: unit = data |> iter (fun v -> ())
@@ -94,8 +92,16 @@ let testRoot =
     testList "root" [
 
 
-        basic_collection_tests [| 1; 2; 3 |]
-        basic_collection_tests [ 1; 2; 3 ]
+        basic_collection_tests [|
+            1
+            2
+            3
+        |]
+        basic_collection_tests [
+            1
+            2
+            3
+        ]
         basic_collection_tests (Some 1)
         basic_collection_tests (ValueSome 1)
 
@@ -108,7 +114,13 @@ let testRoot =
             let mappedx2 = data |> map (fun v -> v * 2)
             eq (Tree.Node(30, Tree.Leaf 4, Tree.Leaf 42)) mappedx2
             eq 3 (len data)
-            let indices = [| 0; 1; 2 |]
+
+            let indices = [|
+                0
+                1
+                2
+            |]
+
             data |> iteri (fun (i: int) v -> eq indices[i] i)
             ()
         }
@@ -129,7 +141,11 @@ let testRoot =
             eq true (data |> exists (fun v -> v = 15))
             eq false (data |> exists (fun v -> v = 16))
 
-            let data2 = [| 15; 2; 21 |]
+            let data2 = [|
+                15
+                2
+                21
+            |]
 
             eq false (data2 |> forall (fun v -> v > 2))
             eq true (data2 |> forall (fun v -> v >= 2))
@@ -138,7 +154,13 @@ let testRoot =
         }
 
         test "spans" {
-            let data = ResizeArray [ 15; 2; 21 ]
+            let data =
+                ResizeArray [
+                    15
+                    2
+                    21
+                ]
+
             let span_data = span data
 
             eq false (span_forall (span_data, (fun v -> v > 2)))

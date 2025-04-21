@@ -1,50 +1,39 @@
 ﻿[<AutoOpen>]
 module Fsil
 
+open System.Collections.Generic
 open System.Runtime.CompilerServices
 open System
-// constrained type variables
+
+// constrained type parameters
 #nowarn "64"
 
 [<AbstractClass>]
 module Internal =
 
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    /// non-null default value
     [<AbstractClass; Sealed>]
     type Default =
 
-        static member inline Default
-            (_f: option<'t> -> unit)
-            : option<'t> =
-            None
+        static member inline Default(_f: option<'t> -> unit) : option<'t> = None // this one technically is null
 
-        static member inline Default
-            (_f: voption<'t> -> unit)
-            : voption<'t> =
-            ValueNone
+        static member inline Default(_f: voption<'t> -> unit) : voption<'t> = ValueNone
 
-        static member inline Default
-            (_f: Result<'t, ^U> -> unit)
-            : Result<'t, 'u> =
+        static member inline Default(_f: Result<'t, ^U> -> unit) : Result<'t, 'u> =
             let inline call source =
-                ((^U or Default): (static member Default: _ -> ^U) ((source,
-                                                                     _f)))
+                ((^U or Default): (static member Default: _ -> ^U) ((source, _f)))
 
             Error(call (fun (_: ^U) -> ()))
 
-        static member inline Default
-            (_f: ResizeArray<'t> -> unit)
-            : ResizeArray<'t> =
+        static member inline Default(_f: ResizeArray<'t> -> unit) : ResizeArray<'t> =
             ResizeArray<'t>()
 
-        static member inline Default
-            (_f: list<'t> -> unit)
-            : list<'t> =
-            []
+        static member inline Default(_f: list<'t> -> unit) : list<'t> = []
 
-        static member inline Default
-            (_f: array<'t> -> unit)
-            : array<'t> =
-            [||]
+        static member inline Default(_f: array<'t> -> unit) : array<'t> = [||]
 
         static member inline Default(_f: byte -> unit) : byte = 0uy
 
@@ -58,120 +47,113 @@ module Internal =
 
         static member inline Default(_f: string -> unit) : string = ""
 
-        static member inline Default
-            (_f: System.Guid -> unit)
-            : System.Guid =
+        static member inline Default(_f: System.Guid -> unit) : System.Guid =
             System.Guid()
 
         static member inline Invoke< ^I
-            when (^I or Default): (static member Default:
-                (^I -> unit) -> ^I)>
+            when (^I or Default): (static member Default: (^I -> unit) -> ^I)>
             ()
             : ^I =
-            ((^I or Default): (static member Default:
-                (^I -> unit) -> ^I) (fun _ -> ()))
+            ((^I or Default): (static member Default: (^I -> unit) -> ^I) (fun _ -> ()))
 
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
+    type DefaultWith =
 
+        static member inline DefaultWith
+            (x: option<'t>, [<InlineIfLambda>] f: unit -> 't)
+            : 't =
+            Option.defaultWith f x
+
+        static member inline DefaultWith
+            (x: voption<'t>, [<InlineIfLambda>] f: unit -> 't)
+            : 't =
+            ValueOption.defaultWith f x
+
+        static member inline DefaultWith
+            (x: Result<'t, 'e>, [<InlineIfLambda>] f: unit -> 't)
+            : 't =
+            match x with
+            | Ok(v) -> v
+            | _ -> f ()
+
+        static member inline Invoke
+            ([<InlineIfLambda>] action: unit -> ^t, source: 'I)
+            : 't =
+            ((^I or DefaultWith): (static member DefaultWith: ^I * (unit -> ^t) -> ^t) (source,
+                                                                                        action))
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type IsEmpty =
-        static member inline IsEmpty
-            ((x: option<'t>, _f: unit -> unit))
-            : bool =
-            x.IsNone
+        static member inline IsEmpty((x: option<'t>, _f: unit -> unit)) : bool = x.IsNone
 
-        static member inline IsEmpty
-            ((x: voption<'t>, _f: unit -> unit))
-            : bool =
-            x.IsNone
+        static member inline IsEmpty((x: voption<'t>, _f: unit -> unit)) : bool = x.IsNone
 
-        static member inline IsEmpty
-            ((x: Result<'t, _>, _f: unit -> unit))
-            : bool =
+        static member inline IsEmpty((x: Result<'t, _>, _f: unit -> unit)) : bool =
             match x with
             | Ok(_) -> false
             | _ -> true
 
-        static member inline IsEmpty
-            ((x: ResizeArray<'t>, _f: unit -> unit))
-            : bool =
+        static member inline IsEmpty((x: ResizeArray<'t>, _f: unit -> unit)) : bool =
             x.Count = 0
 
-        static member inline IsEmpty
-            ((x: list<'t>, _f: unit -> unit))
-            : bool =
-            x.IsEmpty
+        static member inline IsEmpty((x: list<'t>, _f: unit -> unit)) : bool = x.IsEmpty
 
-        static member inline IsEmpty
-            ((x: array<'t>, _f: unit -> unit))
-            : bool =
+        static member inline IsEmpty((x: array<'t>, _f: unit -> unit)) : bool =
             x.Length = 0
 
-        static member inline Invoke
-            (_f: unit -> unit)
-            (source: 'I)
-            : bool =
+        static member inline Invoke (_f: unit -> unit) (source: 'I) : bool =
 
             let inline call source =
-                ((^I or IsEmpty): (static member IsEmpty:
-                    (_ * _) -> bool) ((source, _f)))
+                ((^I or IsEmpty): (static member IsEmpty: (_ * _) -> bool) ((source, _f)))
 
             call source
 
-
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type Length =
-        static member inline Length
-            ((x: option<'t>, _f: unit -> unit))
-            : int =
+
+        static member inline Length((x: option<'t>, _f: unit -> unit)) : int =
             if x.IsSome then 1 else 0
 
-        static member inline Length
-            ((x: voption<'t>, _f: unit -> unit))
-            : int =
+        static member inline Length((x: voption<'t>, _f: unit -> unit)) : int =
             if x.IsSome then 1 else 0
 
-        static member inline Length
-            ((x: Result<'t, _>, _f: unit -> unit))
-            : int =
+        static member inline Length((x: Result<'t, _>, _f: unit -> unit)) : int =
             match x with
             | Ok(_) -> 1
             | _ -> 0
 
-        static member inline Length
-            ((x: ResizeArray<'t>, _f: unit -> unit))
-            : int =
+        static member inline Length((x: ResizeArray<'t>, _f: unit -> unit)) : int =
             x.Count
 
-        static member inline Length
-            ((x: list<'t>, _f: unit -> unit))
-            : int =
-            x.Length
+        static member inline Length((x: list<'t>, _f: unit -> unit)) : int = x.Length
 
-        static member inline Length
-            ((x: array<'t>, _f: unit -> unit))
-            : int =
-            x.Length
+        static member inline Length((x: array<'t>, _f: unit -> unit)) : int = x.Length
 
-        static member inline Invoke
-            (_f: unit -> unit)
-            (source: 'I)
-            : int =
+        static member inline Invoke (_f: unit -> unit) (source: 'I) : int =
 
             let inline call source =
-                ((^I or Length): (static member Length: (_ * _) -> int) ((source,
-                                                                          _f)))
+                ((^I or Length): (static member Length: (_ * _) -> int) ((source, _f)))
 
             call source
 
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type IterateWhile =
 
         static member inline IterateWhile
-            (
-                x: 't[],
-                cond: byref<bool>,
-                [<InlineIfLambda>] f: 't -> unit
-            ) : unit =
+            (x: 't[], cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
             let mutable i = 0
 
             while cond && i < x.Length do
@@ -179,11 +161,8 @@ module Internal =
                 i <- i + 1
 
         static member inline IterateWhile
-            (
-                x: Span<'t>,
-                cond: byref<bool>,
-                [<InlineIfLambda>] f: 't -> unit
-            ) : unit =
+            (x: Span<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
             let mutable i = 0
 
             while cond && i < x.Length do
@@ -191,30 +170,23 @@ module Internal =
                 i <- i + 1
 
         static member inline IterateWhile
-            (
-                x: list<'t>,
-                cond: byref<bool>,
-                [<InlineIfLambda>] f: 't -> unit
-            ) : unit =
+            (x: list<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
             let mutable curr = x
 
             while cond && not x.IsEmpty do
                 f curr.Head
                 curr <- curr.Tail
 
-
         static member inline Invoke
-            (
-                source: 'I,
-                cond: byref<bool>,
-                [<InlineIfLambda>] action: 't -> unit
-            ) : unit =
+            (source: 'I, cond: byref<bool>, [<InlineIfLambda>] action: 't -> unit)
+            : unit =
             ((^I or IterateWhile): (static member IterateWhile:
-                ^I * byref<bool> * (^t -> unit) -> unit) (source,
-                                                          &cond,
-                                                          action))
+                ^I * byref<bool> * (^t -> unit) -> unit) (source, &cond, action))
 
-
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type Iterate =
 
@@ -228,9 +200,7 @@ module Internal =
             : unit =
             ValueOption.iter f x
 
-        static member inline Iterate
-            (x: 't[], [<InlineIfLambda>] f: 't -> unit)
-            : unit =
+        static member inline Iterate(x: 't[], [<InlineIfLambda>] f: 't -> unit) : unit =
             let mutable i = 0
 
             while i < x.Length do
@@ -259,10 +229,8 @@ module Internal =
                 i <- i + 1
 
         static member inline Iterate
-            (
-                x: System.ReadOnlySpan<'t>,
-                [<InlineIfLambda>] f: 't -> unit
-            ) : unit =
+            (x: System.ReadOnlySpan<'t>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
             let mutable i = 0
 
             while i < x.Length do
@@ -285,10 +253,12 @@ module Internal =
         static member inline Invoke
             ([<InlineIfLambda>] action: ^t -> unit, source: 'I)
             : unit =
-            ((^I or Iterate): (static member Iterate:
-                ^I * (^t -> unit) -> unit) (source, action))
+            ((^I or Iterate): (static member Iterate: ^I * (^t -> unit) -> unit) (source,
+                                                                                  action))
 
-
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type IterateIndexed =
 
@@ -300,17 +270,15 @@ module Internal =
             let mutable index = 0
 
             ((^I or Iterate): (static member Iterate: _ * _ -> unit) (source,
-                                                                      (fun
-                                                                          v ->
-                                                                          action
-                                                                              index
-                                                                              v
+                                                                      (fun v ->
+                                                                          action index v
 
                                                                           index <-
-                                                                              index
-                                                                              + 1)))
+                                                                              index + 1)))
 
-
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type Exists =
 
@@ -323,12 +291,13 @@ module Internal =
             ((^I or IterateWhile): (static member IterateWhile:
                 'I * byref<bool> * _ -> unit) (source,
                                                &notfound,
-                                               (fun v ->
-                                                   notfound <-
-                                                       not (pred v))))
+                                               (fun v -> notfound <- not (pred v))))
 
             not notfound
 
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type Forall =
 
@@ -341,12 +310,13 @@ module Internal =
             ((^I or IterateWhile): (static member IterateWhile:
                 'I * byref<bool> * _ -> unit) (source,
                                                &notfound,
-                                               (fun v ->
-                                                   notfound <- pred v)))
+                                               (fun v -> notfound <- pred v)))
 
             notfound
 
-
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type Map =
         static member inline Map
@@ -367,9 +337,7 @@ module Internal =
             | Ok v -> Ok(f v)
             | Error v -> Error v
 
-        static member inline Map
-            (x: 't[], [<InlineIfLambda>] f: 't -> 'u)
-            : 'u[] =
+        static member inline Map(x: 't[], [<InlineIfLambda>] f: 't -> 'u) : 'u[] =
             let dest = Array.zeroCreate<'u> x.Length
             let mutable i = 0
 
@@ -379,51 +347,49 @@ module Internal =
 
             dest
 
-        static member inline Map
-            (x: list<'t>, [<InlineIfLambda>] f: 't -> 'u)
-            : list<'u> =
+        static member inline Map(x: list<'t>, [<InlineIfLambda>] f: 't -> 'u) : list<'u> =
             List.map f x
 
         static member inline Invoke
             ([<InlineIfLambda>] mapping: 't -> 'u, source: ^I)
             : ^Result =
 
-            let inline call (source: ^I) =
-                ((^I or Map): (static member Map:
-                    ^I * (^t -> ^u) -> ^Result) (source, mapping))
+            let inline call(source: ^I) =
+                ((^I or Map): (static member Map: ^I * (^t -> ^u) -> ^Result) (source,
+                                                                               mapping))
 
             call source
 
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type MapIndexed =
-        static member inline Invoke
-            (mapping: int -> 't -> 'u, source: ^I)
-            =
+        static member inline Invoke(mapping: int -> 't -> 'u, source: ^I) =
 
             let mutable index = -1
 
             ((^I or Map): (static member Map: _ * _ -> _) (source,
                                                            (fun v ->
-                                                               index <-
-                                                                   index
-                                                                   + 1
+                                                               index <- index + 1
 
-                                                               mapping
-                                                                   index
-                                                                   v)))
+                                                               mapping index v)))
 
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type Fold =
         static member inline Invoke
-            (
-                [<InlineIfLambdaAttribute>] fn: ^acc -> ^t -> ^acc,
-                (s0: ^acc),
-                (source: ^I)
-            ) : ^acc =
+            ([<InlineIfLambdaAttribute>] fn: ^acc -> ^t -> ^acc, (s0: ^acc), (source: ^I))
+            : ^acc =
             let mutable state = s0
             Iterate.Invoke((fun v -> state <- fn state v), source)
             state
 
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
     [<AbstractClass; Sealed>]
     type FoldIndexed =
         static member inline Invoke
@@ -433,83 +399,66 @@ module Internal =
             : ^acc =
             let mutable state = s0
 
-            IterateIndexed.Invoke(
-                (fun i v -> state <- fn i state v),
-                source
-            )
+            IterateIndexed.Invoke((fun i v -> state <- fn i state v), source)
 
             state
 
 
-
+#if FABLE_COMPILER
+[<Fable.Core.Erase>]
+#endif
 [<AbstractClass; Sealed; AutoOpen>]
 module Abstract =
 
-    let inline zero<'a when 'a: (static member Zero: 'a)> : ^a =
-        'a.Zero
+    let inline is_empty(source: 't) : bool =
+        Internal.IsEmpty.Invoke (fun _ -> ()) source
+
+    let inline value<'a, ^b when 'a: (member Value: ^b)>(arg: ^a) : ^b = arg.Value
+
+    let inline default_with ([<InlineIfLambdaAttribute>] or_else: unit -> _) (x: 'a) : _ =
+        Internal.DefaultWith.Invoke(or_else, x)
+
+    let inline zero<'a when 'a: (static member Zero: 'a)> : ^a = 'a.Zero
 
     let inline one<'a when 'a: (static member One: 'a)> : ^a = 'a.One
 
-    let inline none<'a when 'a: (static member None: 'a)> : ^a =
-        'a.None
+    let inline none<'a when 'a: (static member None: 'a)> : ^a = 'a.None
 
-    let inline some<'a, 'b when 'a: (static member Some: 'b -> 'a)>
-        : 'b -> ^a =
-        'a.Some
+    let inline some<'a, 'b when 'a: (static member Some: 'b -> 'a)> : 'b -> ^a = 'a.Some
 
-    let inline is_some<'a, ^b when 'a: (member IsSome: bool)>
-        (arg: ^a)
-        : bool =
-        arg.IsSome
+    let inline is_some<'a, ^b when 'a: (member IsSome: bool)>(arg: ^a) : bool = arg.IsSome
 
-    let inline is_none<'a
-        when 'a: (static member None: 'a) and ^a: equality>
+    let inline is_none<'a when 'a: (static member None: 'a) and ^a: equality>
         (arg: ^a)
         : bool =
         arg = 'a.None
 
-    let inline value<'a, ^b when 'a: (member Value: ^b)>
-        (arg: ^a)
-        : ^b =
-        arg.Value
-
-    [<CompiledName("ToEnum")>]
-    let inline enum (value: ^e) : ^t when ^t: enum<^e> =
+    let inline enum(value: ^e) : ^t when ^t: enum<^e> =
         LanguagePrimitives.EnumOfValue value
 
-    [<CompiledName("EnumValue")>]
-    let inline enumv (enum: ^t when ^t: enum<^e>) : ^e =
+    let inline enumv(enum: ^t when ^t: enum<^e>) : ^e =
         LanguagePrimitives.EnumToValue enum
 
-    let inline default_with<'a, ^b
-        when 'a: (member Value: ^b) and 'a: (member IsSome: bool)>
-        ([<InlineIfLambda>] or_else: unit -> ^b)
-        (arg: ^a)
-        : ^b =
-        if is_some arg then value arg else or_else ()
-
-    let inline forall
-        ([<InlineIfLambdaAttribute>] f: 't -> bool)
-        (x: ^I)
-        : bool =
+    let inline forall ([<InlineIfLambdaAttribute>] f: 't -> bool) (x: ^I) : bool =
         Internal.Forall.Invoke(f, x)
 
-    let inline exists
-        ([<InlineIfLambdaAttribute>] f: 't -> bool)
-        (x: ^I)
-        : bool =
+    let inline exists ([<InlineIfLambdaAttribute>] f: 't -> bool) (x: ^I) : bool =
         Internal.Exists.Invoke(f, x)
 
-    let inline iter
-        ([<InlineIfLambdaAttribute>] f: 't -> unit)
-        (x: ^I)
+    let inline iter_range
+        ([<InlineIfLambdaAttribute>] f: int -> unit)
+        (limit_exclusive: int)
         : unit =
+        let mutable i = 0
+
+        while i < limit_exclusive do
+            f i
+            i <- i + 1
+
+    let inline iter ([<InlineIfLambdaAttribute>] f: 't -> unit) (x: ^I) : unit =
         Internal.Iterate.Invoke(f, x)
 
-    let inline iteri
-        ([<InlineIfLambdaAttribute>] f: int -> ^t -> unit)
-        (x: ^I)
-        : unit =
+    let inline iteri ([<InlineIfLambdaAttribute>] f: int -> ^t -> unit) (x: ^I) : unit =
         Internal.IterateIndexed.Invoke(f, x)
 
     // this is intentionally defined initial value first for type inference
@@ -530,39 +479,37 @@ module Abstract =
     let inline map ([<InlineIfLambdaAttribute>] f: 't -> 'u) (x: ^I) =
         Internal.Map.Invoke(f, x)
 
-    let inline mapi
-        ([<InlineIfLambdaAttribute>] f: int -> 't -> 'u)
-        (x: ^I)
-        =
+    let inline mapi ([<InlineIfLambdaAttribute>] f: int -> 't -> 'u) (x: ^I) =
         Internal.MapIndexed.Invoke(f, x)
 
-    let inline len (source: 't) : int =
-        Internal.Length.Invoke (fun _ -> ()) source
+    let inline len(source: 't) : int =
+        Internal.Length.Invoke (fun () -> ()) source
 
-    let inline is_empty (source: 't) : bool =
-        Internal.IsEmpty.Invoke (fun _ -> ()) source
 
     /// default instance, calls let Default
     let inline _default< ^t
-        when (^t or Internal.Default): (static member Default:
-            (^t -> unit) -> ^t)>
+        when (^t or Internal.Default): (static member Default: (^t -> unit) -> ^t)>
         ()
         : ^t =
         Internal.Default.Invoke< ^t>()
 
 #if FABLE_COMPILER
     // stdout.WriteLine is generally better but fable does not support it
-    // this compiles down to console.log
-    let inline print (x: obj) = System.Console.WriteLine(x)
+#if FABLE_COMPILER_RUST
+    let inline print(x: 't) = printfn $"%A{x}"
 #else
-    let inline print (x: obj) = stdout.WriteLine(x)
+    let inline print(x: 't) = System.Console.WriteLine(x)
+#endif
+#else
+    let inline print(x: 't) = stdout.WriteLine(x)
 #endif
 
+#if !FABLE_COMPILER
 // overloads for byref/struct/other types
 // not as general but at least allowed in CIL
 [<AbstractClass; Sealed; AutoOpen>]
 type Abstract =
-#if !FABLE_COMPILER
+
     static member inline span(x: ResizeArray<'t>) : System.Span<'t> =
         System.Runtime.InteropServices.CollectionsMarshal.AsSpan(x)
 
@@ -573,22 +520,18 @@ type Abstract =
         System.MemoryExtensions.AsSpan(x)
 
     static member inline span_iter
-        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit) : unit =
+        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit)
+        : unit =
         Internal.Iterate.Iterate(x, f)
 
     static member inline span_iter_while
-        (
-            x: System.Span<'t>,
-            cond: byref<bool>,
-            [<InlineIfLambdaAttribute>] f: 't -> unit
-        ) : unit =
+        (x: System.Span<'t>, cond: byref<bool>, [<InlineIfLambdaAttribute>] f: 't -> unit)
+        : unit =
         Internal.IterateWhile.IterateWhile(x, &cond, f)
 
     static member inline span_iteri
-        (
-            x: System.Span<'t>,
-            [<InlineIfLambdaAttribute>] f: int -> 't -> unit
-        ) : unit =
+        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] f: int -> 't -> unit)
+        : unit =
         let mutable index = 0
 
         Internal.Iterate.Iterate(
@@ -601,25 +544,17 @@ type Abstract =
     // todo: some kind of simd lookups as well
 
     static member inline span_forall
-        (
-            x: System.Span<'t>,
-            [<InlineIfLambdaAttribute>] pred: 't -> bool
-        ) : bool =
+        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] pred: 't -> bool)
+        : bool =
         let mutable notfound = true
 
-        Internal.IterateWhile.IterateWhile(
-            x,
-            &notfound,
-            (fun v -> notfound <- pred v)
-        )
+        Internal.IterateWhile.IterateWhile(x, &notfound, (fun v -> notfound <- pred v))
 
         notfound
 
     static member inline span_exists
-        (
-            x: System.Span<'t>,
-            [<InlineIfLambdaAttribute>] pred: 't -> bool
-        ) : bool =
+        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] pred: 't -> bool)
+        : bool =
         let mutable notfound = true
 
         Internal.IterateWhile.IterateWhile(
@@ -629,15 +564,14 @@ type Abstract =
         )
 
         not notfound
-#endif
 
     static member inline span_iteri
-        (
-            x: ResizeArray<'t>,
-            [<InlineIfLambdaAttribute>] f: int -> 't -> unit
-        ) : unit =
+        (x: ResizeArray<'t>, [<InlineIfLambdaAttribute>] f: int -> 't -> unit)
+        : unit =
         span_iteri (span x, f)
 
     static member inline span_iter
-        (x: ResizeArray<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit) : unit =
+        (x: ResizeArray<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit)
+        : unit =
         span_iter (span x, f)
+#endif
