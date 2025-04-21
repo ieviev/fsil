@@ -38,7 +38,7 @@ type Tree<'T> =
                 if cond then
                     Tree.IterateWhile(r, &cond, fn)
 
-    static member Length((self: Tree<'T>, _f: unit -> unit)) : int =
+    static member Length(self: Tree<'T>) : int =
         let mutable len_total = 0
         self |> iter (fun _ -> len_total <- len_total + 1)
         len_total
@@ -48,12 +48,12 @@ type Tree<'T> =
             (^inner -> unit) -> ^inner)>
         ((_f))
         : Tree< ^inner > =
-        let inner_default: 'inner = _default ()
+        let inner_default: 'inner = default_ ()
         Leaf(inner_default)
 
 
 // ensure all basic members exist, compile and run
-let inline basic_collection_tests(data: ^a) : Test =
+let inline basic_collection_tests(data) : Test =
     testList $"collection tests {data.GetType().Name}" [
         test "iter" {
             let iter_: unit = data |> iter (fun v -> ())
@@ -64,7 +64,7 @@ let inline basic_collection_tests(data: ^a) : Test =
             ()
         }
         test "map" {
-            let map_: 'c = data |> map (fun v -> v + 1)
+            let map_ = data |> map (fun v -> v + 1)
             ()
         }
         test "mapi" {
@@ -80,7 +80,7 @@ let inline basic_collection_tests(data: ^a) : Test =
             ()
         }
         test "default" {
-            let default_: ^a = _default< ^a> ()
+            let default_ = default_inst (data)
             ()
         }
     ]
@@ -126,11 +126,11 @@ let testRoot =
         }
 
         test "defaults" {
-            let _ = _default<int> ()
-            let _ = _default<uint> ()
-            let _ = _default<string> ()
-            let _ = _default<bool> ()
-            let _ = _default<byte> ()
+            let _ = default_<int> ()
+            let _ = default_<uint> ()
+            let _ = default_<string> ()
+            let _ = default_<bool> ()
+            let _ = default_<byte> ()
             ()
         }
 
@@ -167,6 +167,31 @@ let testRoot =
             eq true (span_forall (span_data, (fun v -> v >= 2)))
             eq true (span_exists (span_data, (fun v -> v = 15)))
             eq false (span_exists (span_data, (fun v -> v = 16)))
+        }
+
+        test "dict" {
+            let d =
+                System.Collections.Generic.Dictionary(
+                    dict [
+                        "key1", 1
+                        "key2", 2
+                    ]
+                )
+
+            eq (some 1) (d |> try_item "key1")
+            eq (none) (d |> try_item "key3")
+            eq (2) (d |> try_item "key3" |> default_with (fun v -> 2))
+        }
+
+        test "result" {
+            let res = Ok(5)
+
+            let args = [|
+                if is_ok res then
+                    value res
+            |]
+
+            eq args [| 5 |]
         }
     ]
 
