@@ -485,3 +485,4 @@ $RECYCLE.BIN/
 fable_modules
 *.fs.js
 *.fs.js.map
+*.fs.rs
