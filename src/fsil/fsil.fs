@@ -356,6 +356,29 @@ module Internal =
     [<Fable.Core.Erase>]
 #endif
     [<AbstractClass; Sealed>]
+    type TryFind =
+
+        static member inline Invoke
+            ([<InlineIfLambda>] pred: 't -> bool, source: ^I)
+            : ValueOption<'t> =
+
+            let mutable looping = true
+            let mutable result = ValueNone
+
+            ((^I or IterateWhile): (static member IterateWhile:
+                'I * byref<bool> * _ -> unit) (source,
+                                               &looping,
+                                               (fun v ->
+                                                   if pred v then
+                                                       looping <- false
+                                                       result <- ValueSome v)))
+
+            result
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
     type Forall =
 
         static member inline Invoke
@@ -430,6 +453,46 @@ module Internal =
                 source
             )
 
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
+    type Bind =
+        static member inline Bind
+            (x: option<_>, [<InlineIfLambda>] f: 't -> option<'u>)
+            : option<'u> =
+            Option.bind f x
+
+        static member inline Bind
+            (x: voption<'t>, [<InlineIfLambda>] f: 't -> voption<'u>)
+            : voption<'u> =
+            ValueOption.bind f x
+
+        static member inline Bind
+            (x: array<'t>, [<InlineIfLambda>] f: 't -> array<'u>)
+            : array<'u> =
+            let result = ResizeArray()
+            Iterate.Invoke((fun v -> result.AddRange(f v)), x)
+            result.ToArray()
+
+        static member inline Bind
+            (x: ResizeArray<'t>, [<InlineIfLambda>] f: 't -> ResizeArray<'u>)
+            : ResizeArray<'u> =
+            let result = ResizeArray()
+            Iterate.Invoke((fun v -> result.AddRange(f v)), x)
+            result
+
+        static member inline Bind
+            (x: list<'t>, [<InlineIfLambda>] f: 't -> list<'u>)
+            : list<'u> =
+            List.collect f x
+
+        static member inline Invoke< ^I, ^t, ^u, ^r
+            when (^I or Bind): (static member Bind: ^I * (^t -> ^u) -> ^r)>
+            ([<InlineIfLambda>] fn: ^t -> ^u, source: _)
+            : _ =
+            ((^I or Bind): (static member Bind: ^I * (^t -> ^u) -> _) (source, fn))
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -536,8 +599,12 @@ module Abstract =
     let inline mapi ([<InlineIfLambdaAttribute>] f: int -> 't -> 'u) (x: _) =
         Internal.MapIndexed.Invoke(f, x)
 
+    let inline bind ([<InlineIfLambdaAttribute>] f: 't -> 'u) (x: _) =
+        Internal.Bind.Invoke(f, x)
+
     let inline len(source: _) : int = Internal.Length.Invoke source
     let inline try_item k (source: _) = Internal.TryItem.Invoke(k, source)
+    let inline try_find k (source: _) = Internal.TryFind.Invoke(k, source)
 
     // default from type parameter
     let inline default_< ^t

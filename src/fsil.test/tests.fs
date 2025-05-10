@@ -90,8 +90,6 @@ open System.Runtime.InteropServices
 
 let testRoot =
     testList "root" [
-
-
         basic_collection_tests [|
             1
             2
@@ -168,7 +166,7 @@ let testRoot =
             eq true (span_exists (span_data, (fun v -> v = 15)))
             eq false (span_exists (span_data, (fun v -> v = 16)))
 
-            
+
         }
 
         test "dict" {
@@ -195,14 +193,43 @@ let testRoot =
 
             eq args [| 5 |]
         }
+
+        test "try_find" {
+            let res = [|
+                1
+                2
+                3
+            |]
+
+            eq (some 3) (res |> try_find (fun v -> v = 3))
+            eq none (res |> try_find (fun v -> v = 4))
+        }
+
+        test "bind" {
+            let res = [|
+                1
+                2
+                3
+            |]
+
+            eq [||] (res |> bind (fun v -> [||]))
+
+            eq
+                [|
+                    1
+                    1
+                    2
+                    2
+                    3
+                    3
+                |]
+                (res
+                 |> bind (fun v -> [|
+                     v
+                     v
+                 |]))
+        }
     ]
 
 [<EntryPoint>]
 let main argv = runTestsWithCLIArgs [] argv testRoot
-
-
-
-
-
-
-
