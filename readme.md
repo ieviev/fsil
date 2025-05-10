@@ -31,7 +31,7 @@ there are also some functions for spans with separate function definitions due t
 
 `span_forall`, `span_exists`, `span_iter`... 
 
-You can also define your own implementations as static members. [here is an example](./src/fsil.test/Program.fs) for `iter` and `map` on a Tree, for documentation just look at the [source code itself](./src/fsil/Library.fs).
+You can also define your own implementations as static members. [here is an example](./src/fsil.test/tests.fs) for `iter` and `map` on a Tree, for documentation just look at the [source code itself](./src/fsil/Library.fs).
 
 ```fsharp
 type Tree<'T> =
