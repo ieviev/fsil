@@ -158,6 +158,7 @@ module Internal =
         static member inline Length(x: list<'t>) : int = x.Length
 
         static member inline Length(x: array<'t>) : int = x.Length
+        static member inline Length(x: Span<'t>) : int = x.Length
         static member inline Length(x: Dictionary<'k, 'v>) : int = x.Count
 
         static member inline Invoke< ^I, ^t
@@ -176,8 +177,9 @@ module Internal =
             (x: 't[], cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
             : unit =
             let mutable i = 0
+            let length = x.Length
 
-            while cond && i < x.Length do
+            while cond && i < length do
                 f x[i]
                 i <- i + 1
 
@@ -185,8 +187,9 @@ module Internal =
             (x: Span<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
             : unit =
             let mutable i = 0
+            let length = x.Length
 
-            while cond && i < x.Length do
+            while cond && i < length do
                 f x[i]
                 i <- i + 1
 
@@ -365,15 +368,37 @@ module Internal =
             let mutable looping = true
             let mutable result = ValueNone
 
-            ((^I or IterateWhile): (static member IterateWhile:
-                'I * byref<bool> * _ -> unit) (source,
-                                               &looping,
-                                               (fun v ->
-                                                   if pred v then
-                                                       looping <- false
-                                                       result <- ValueSome v)))
+            IterateWhile.Invoke(
+                source,
+                &looping,
+                (fun v ->
+                    if pred v then
+                        looping <- false
+                        result <- ValueSome v)
+            )
 
             result
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
+    type TryIndex =
+
+        static member inline Invoke
+            ([<InlineIfLambda>] pred: 't -> bool, source: ^I)
+            : int =
+
+            let mutable looping = true
+            let mutable i = 0
+
+            IterateWhile.Invoke(
+                source,
+                &looping,
+                (fun v -> if pred v then looping <- false else i <- i + 1)
+            )
+
+            if looping then -1 else i
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -542,6 +567,7 @@ module Abstract =
 
     let inline none<'a when 'a: (static member None: 'a)> : ^a = 'a.None
 
+    // tbd: perhaps this should just be an alias for ValueSome
     let inline some<'a, 'b when 'a: (static member Some: 'b -> 'a)> : 'b -> ^a = 'a.Some
 
     let inline is_some<'a when 'a: (member IsSome: bool)>(arg: ^a) : bool = arg.IsSome
@@ -605,6 +631,7 @@ module Abstract =
     let inline len(source: _) : int = Internal.Length.Invoke source
     let inline try_item k (source: _) = Internal.TryItem.Invoke(k, source)
     let inline try_find k (source: _) = Internal.TryFind.Invoke(k, source)
+    let inline try_index k (source: _) = Internal.TryIndex.Invoke(k, source)
 
     // default from type parameter
     let inline default_< ^t

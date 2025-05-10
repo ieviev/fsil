@@ -229,6 +229,18 @@ let testRoot =
                      v
                  |]))
         }
+        test "index" {
+            let res = [|
+                1
+                2
+                3
+            |]
+
+            eq 0 (res |> try_index (fun v -> v = 1))
+            eq 1 (res |> try_index (fun v -> v = 2))
+            eq 2 (res |> try_index (fun v -> v = 3))
+            eq -1 (res |> try_index (fun v -> v = 10))
+        }
     ]
 
 [<EntryPoint>]
