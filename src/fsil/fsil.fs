@@ -86,8 +86,9 @@ module Internal =
 #endif
     [<AbstractClass; Sealed>]
     type IsEmpty =
+        // if it has length defined then use length
+        static member inline IsEmpty(x: ^t) : bool = (^t: (member Length: int) x) = 0
         static member inline IsEmpty(x: option<'t>) : bool = x.IsNone
-
         static member inline IsEmpty(x: voption<'t>) : bool = x.IsNone
 
         static member inline IsEmpty(x: Result<'t, _>) : bool =
@@ -96,11 +97,8 @@ module Internal =
             | _ -> true
 
         static member inline IsEmpty(x: ResizeArray<'t>) : bool = x.Count = 0
-
-        static member inline IsEmpty(x: list<'t>) : bool = x.IsEmpty
-
-        static member inline IsEmpty(x: array<'t>) : bool = x.Length = 0
         static member inline IsEmpty(x: Dictionary<'k, 'v>) : bool = x.Count = 0
+
 
         static member inline Invoke< ^I
             when (^I or IsEmpty): (static member IsEmpty: ^I -> bool)>
@@ -114,20 +112,12 @@ module Internal =
 #endif
     [<AbstractClass; Sealed>]
     type Value =
-        static member inline Value(x: option<'t>) : 't =
-            match x with
-            | Some(v) -> v
-            | None -> failwith "no value"
-
-        static member inline Value(x: voption<'t>) : 't =
-            match x with
-            | ValueSome x -> x
-            | ValueNone -> failwith "no value"
-
         static member inline Value(x: Result<'t, _>) : 't =
             match x with
             | Ok(v) -> v
             | _ -> failwith "no value"
+
+        static member inline Value(x: ^t) : ^v = (^t: (member Value: ^v) x)
 
         static member inline Invoke< ^I, ^v
             when (^I or Value): (static member Value: ^I -> ^v)>
@@ -141,9 +131,15 @@ module Internal =
     [<AbstractClass; Sealed>]
     type Length =
 
-        static member inline Length(x: option<'t>) : int = if x.IsSome then 1 else 0
+        static member inline Length(x: option<'t>) : int =
+            match x with
+            | Some _ -> 1
+            | _ -> 0
 
-        static member inline Length(x: voption<'t>) : int = if x.IsSome then 1 else 0
+        static member inline Length(x: voption<'t>) : int =
+            match x with
+            | ValueSome _ -> 1
+            | _ -> 0
 
         static member inline Length(x: Result<'t, _>) : int =
             match x with
@@ -152,17 +148,16 @@ module Internal =
 
         static member inline Length(x: ResizeArray<'t>) : int = x.Count
 
-        static member inline Length(x: list<'t>) : int = x.Length
 
-        static member inline Length(x: array<'t>) : int = x.Length
-        static member inline Length(x: Span<'t>) : int = x.Length
+        static member inline Length(x: ^t) : int = (^t: (member Length: int) x)
         static member inline Length(x: Dictionary<'k, 'v>) : int = x.Count
 
-        static member inline Invoke< ^I, ^t
+
+        static member inline Invoke< ^I
             when (^I or Length): (static member Length: ^I -> int)>
             (source: _)
             : int =
-            ((^I or Length): (static member Length: ^I -> int) (source))
+            ((^I or Length): (static member Length: _ -> _) (source))
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -482,7 +477,7 @@ module Internal =
     [<AbstractClass; Sealed>]
     type Bind =
         static member inline Bind
-            (x: option<_>, [<InlineIfLambda>] f: 't -> option<'u>)
+            (x: option<'t>, [<InlineIfLambda>] f: 't -> option<'u>)
             : option<'u> =
             Option.bind f x
 
@@ -553,6 +548,9 @@ module Abstract =
 
     let inline is_empty(source: _) : bool = Internal.IsEmpty.Invoke source
 
+    let inline is_null_or_empty(source: _) : bool =
+        source = null || Internal.IsEmpty.Invoke source
+
     let inline value(source: _) : _ = Internal.Value.Invoke(source)
 
     let inline default_with ([<InlineIfLambdaAttribute>] or_else: unit -> _) (x: _) : _ =
@@ -572,6 +570,9 @@ module Abstract =
     let inline is_none<'a when 'a: (member IsNone: bool)>(arg: ^a) : bool = arg.IsNone
 
     let inline is_ok<'a when 'a: (member IsOk: bool)>(arg: ^a) : bool = arg.IsOk
+
+    /// same as len but uses member .Length
+    let inline length<'a when 'a: (member Length: int)>(arg: ^a) : int = arg.Length
 
     let inline enum(value: ^e) : ^t when ^t: enum<^e> =
         LanguagePrimitives.EnumOfValue value
@@ -595,35 +596,25 @@ module Abstract =
             f i
             i <- i + 1
 
-    let inline iter ([<InlineIfLambdaAttribute>] f: 't -> unit) (x: _) : unit =
+    let inline iter ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.Iterate.Invoke(f, x)
 
-    let inline iteri ([<InlineIfLambdaAttribute>] f: int -> ^t -> unit) (x: _) : unit =
+    let inline iteri ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.IterateIndexed.Invoke(f, x)
 
     // this is intentionally defined initial value first for type inference
-    let inline fold
-        (initial: ^acc)
-        ([<InlineIfLambdaAttribute>] f: ^acc -> ^t -> ^acc)
-        (x: _)
-        =
+    let inline fold (initial) ([<InlineIfLambdaAttribute>] f) (x: _) =
         Internal.Fold.Invoke(f, initial, x)
 
-    let inline foldi
-        (initial: ^acc)
-        ([<InlineIfLambdaAttribute>] f: int -> ^acc -> ^t -> ^acc)
-        (x: _)
-        =
+    let inline foldi (initial) ([<InlineIfLambdaAttribute>] f) (x: _) =
         Internal.FoldIndexed.Invoke f initial x
 
-    let inline map ([<InlineIfLambdaAttribute>] f: 't -> 'u) (x: _) =
-        Internal.Map.Invoke(f, x)
+    let inline map ([<InlineIfLambdaAttribute>] f) (x: _) = Internal.Map.Invoke(f, x)
 
-    let inline mapi ([<InlineIfLambdaAttribute>] f: int -> 't -> 'u) (x: _) =
+    let inline mapi ([<InlineIfLambdaAttribute>] f) (x: _) =
         Internal.MapIndexed.Invoke(f, x)
 
-    let inline bind ([<InlineIfLambdaAttribute>] f: 't -> 'u) (x: _) =
-        Internal.Bind.Invoke(f, x)
+    let inline bind ([<InlineIfLambdaAttribute>] f) (x: _) = Internal.Bind.Invoke(f, x)
 
     let inline len(source: _) : int = Internal.Length.Invoke source
     let inline try_item k (source: _) = Internal.TryItem.Invoke(k, source)
@@ -634,13 +625,6 @@ module Abstract =
     let inline default_< ^t
         when (^t or Internal.Default): (static member Default: (^t -> unit) -> ^t)>
         ()
-        : ^t =
-        Internal.Default.Invoke< ^t>()
-
-    // default from instance
-    let inline default_inst< ^t
-        when (^t or Internal.Default): (static member Default: (^t -> unit) -> ^t)>
-        (inst: ^t)
         : ^t =
         Internal.Default.Invoke< ^t>()
 

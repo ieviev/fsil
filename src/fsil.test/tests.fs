@@ -53,7 +53,7 @@ type Tree<'T> =
 
 
 // ensure all basic members exist, compile and run
-let inline basic_collection_tests(data) : Test =
+let inline basic_collection_tests(data: ^t) : Test =
     testList $"collection tests {data.GetType().Name}" [
         test "iter" {
             let iter_: unit = data |> iter (fun v -> ())
@@ -79,14 +79,25 @@ let inline basic_collection_tests(data) : Test =
             let empty: bool = is_empty data
             ()
         }
-        test "default" {
-            let default_ = default_inst (data)
-            ()
-        }
     ]
 
 open Fsil.Internal
 open System.Runtime.InteropServices
+
+let test_is_empty =
+    test "is_empty" {
+        let l = is_empty ""
+        ()
+    }
+
+let test_value =
+    test "value" {
+        eq 1 (value (ValueSome 1))
+        eq 1 (value (Some 1))
+        eq 1 (value (Ok 1))
+        ()
+    }
+
 
 let testRoot =
     testList "root" [
@@ -241,6 +252,7 @@ let testRoot =
             eq 2 (res |> try_index (fun v -> v = 3))
             eq -1 (res |> try_index (fun v -> v = 10))
         }
+        test_is_empty
     ]
 
 [<EntryPoint>]
