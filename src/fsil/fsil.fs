@@ -571,9 +571,6 @@ module Abstract =
 
     let inline is_ok<'a when 'a: (member IsOk: bool)>(arg: ^a) : bool = arg.IsOk
 
-    /// same as len but uses member .Length
-    let inline length<'a when 'a: (member Length: int)>(arg: ^a) : int = arg.Length
-
     let inline enum(value: ^e) : ^t when ^t: enum<^e> =
         LanguagePrimitives.EnumOfValue value
 
