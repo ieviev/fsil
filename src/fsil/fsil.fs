@@ -5,9 +5,6 @@ open System.Collections.Generic
 open System.Runtime.CompilerServices
 open System
 
-// constrained type parameters
-#nowarn "64"
-
 [<AbstractClass>]
 module Internal =
 
@@ -17,15 +14,15 @@ module Internal =
     [<AbstractClass; Sealed>]
     type Default =
 
-        static member inline Default(_f: option<'t> -> unit) : option<'t> = None // this one technically is null
+        static member inline Default(_f: option<'t> -> unit) : option<'t> = None
 
         static member inline Default(_f: voption<'t> -> unit) : voption<'t> = ValueNone
 
-        static member inline Default(_f: Result<'t, ^U> -> unit) : Result<'t, 'u> =
+        static member inline Default(_f: Result<'t, ^U> -> unit) : Result<'t, ^U> =
             let inline call source =
                 ((^U or Default): (static member Default: _ -> ^U) ((source, _f)))
 
-            Error(call (fun (_: ^U) -> ()))
+            Error(call (fun _ -> ()))
 
         static member inline Default(_f: ResizeArray<'t> -> unit) : ResizeArray<'t> =
             ResizeArray<'t>()
@@ -670,7 +667,7 @@ type Abstract =
     static member inline span(x: array<'t>) : System.Span<'t> =
         System.MemoryExtensions.AsSpan(x)
 
-    static member inline span(x: string) : System.ReadOnlySpan<'t> =
+    static member inline span(x: string) : System.ReadOnlySpan<char> =
         System.MemoryExtensions.AsSpan(x)
 
     static member inline span_iter
