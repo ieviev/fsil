@@ -124,11 +124,7 @@ let testRoot =
             eq (Tree.Node(30, Tree.Leaf 4, Tree.Leaf 42)) mappedx2
             eq 3 (len data)
 
-            let indices = [|
-                0
-                1
-                2
-            |]
+            let indices = [| 0..2 |]
 
             data |> iteri (fun (i: int) v -> eq indices[i] i)
             ()
@@ -206,22 +202,15 @@ let testRoot =
         }
 
         test "try_find" {
-            let res = [|
-                1
-                2
-                3
-            |]
+            let res = [| 1..3 |]
 
             eq (some 3) (res |> try_find (fun v -> v = 3))
             eq none (res |> try_find (fun v -> v = 4))
+            eq none ([ 1..3 ] |> try_find (fun v -> v = 4))
         }
 
         test "bind" {
-            let res = [|
-                1
-                2
-                3
-            |]
+            let res = [| 1..3 |]
 
             eq [||] (res |> bind (fun v -> [||]))
 
@@ -256,4 +245,5 @@ let testRoot =
     ]
 
 [<EntryPoint>]
-let main argv = runTestsWithCLIArgs [] argv testRoot
+let main argv =
+    runTestsWithCLIArgs [] argv testRoot

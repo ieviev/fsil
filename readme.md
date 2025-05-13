@@ -54,15 +54,37 @@ type Tree<'T> =
             fn v
             Tree.Iterate(r, fn)
 
+    static member IterateWhile(self: Tree<'T>, cond: byref<bool>, fn: 'T -> unit) : unit =
+        if cond then
+            match self with
+            | Leaf x -> fn x
+            | Node(v, l, r) ->
+                Tree.IterateWhile(l, &cond, fn)
+                if cond then fn v
+                if cond then Tree.IterateWhile(r, &cond, fn)
+
 let tree1 = Leaf 1
 let iter = tree1 |> iter (fun v -> print v)
 let mapped: Tree<int> = tree1 |> map (fun v -> v + 1)
-// these implementations are generated from Iterate and Map
-// so you get them "for free"
-let iteri = tree1 |> iteri (fun idx v -> print v)
-let mapped2: Tree<int> = tree1 |> mapi (fun idx v -> idx + v + 1)
-let sum = tree1 |> fold 0 (fun acc v -> acc + 1 )
-let sum2 = tree1 |> foldi 0 (fun idx acc v -> acc + 1 )
+// these implementations are generated from Iterate/IterateWhile/Map
+// so you get them all "for free"
+let map_indexed = tree1 |> mapi (fun idx v -> $"elem {idx}:{v}")
+let sum: int = tree1 |> fold 0 (fun acc v -> acc + v)
+let exists2: bool = tree1 |> exists (fun v -> v = 2)
+let all_larger_than_5: bool = tree1 |> forall (fun v -> v > 5)
+let find_5: voption<int> = tree1 |> try_find (fun v -> v = 5)
 ```
+
+or you can extend these definitions to your own general functions
+```fsharp
+// flattening a list is just binding to id
+// this function now works on any collection you can bind
+let inline flatten list = list |> bind id 
+
+let flatarray = flatten [|[|1;2;3|];[|4;5;6|]|] // [|1;2;3;4;5;6|]
+let flatlist = flatten [[1;2;3];[4;5;6]]  // [1;2;3;4;5;6]
+let flatoption = flatten (Some(Some 1)) // Some 1
+```
+
 
 Most important remember to have (f#)un! :)

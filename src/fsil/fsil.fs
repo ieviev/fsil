@@ -190,7 +190,7 @@ module Internal =
             : unit =
             let mutable curr = x
 
-            while cond && not x.IsEmpty do
+            while cond && not curr.IsEmpty do
                 f curr.Head
                 curr <- curr.Tail
 
