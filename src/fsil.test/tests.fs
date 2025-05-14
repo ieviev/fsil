@@ -156,6 +156,10 @@ let testRoot =
             eq true (data2 |> forall (fun v -> v >= 2))
             eq true (data2 |> exists (fun v -> v = 15))
             eq false (data2 |> exists (fun v -> v = 16))
+            
+            eq true (None |> forall (fun v -> v = 1))
+            eq true (Some 1 |> forall (fun v -> v = 1))
+            eq false (Some 2 |> forall (fun v -> v = 1))
         }
 
         test "spans" {

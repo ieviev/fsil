@@ -205,6 +205,17 @@ module Internal =
             while cond && e.MoveNext() do
                 f e.Current
 
+        static member inline IterateWhile
+            (x: option<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            if cond && x.IsSome then
+                f x.Value
+
+        static member inline IterateWhile
+            (x: voption<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            if cond && x.IsSome then
+                f x.Value
 
         static member inline Invoke
             (source: _, cond: byref<bool>, [<InlineIfLambda>] action: 't -> unit)
@@ -461,12 +472,13 @@ module Internal =
     type MapIndexed =
         static member inline Invoke(mapping: int -> 't -> 'u, source: _) =
 
-            let mutable index = -1
+            let mutable index = 0
 
             Map.Invoke(
                 (fun v ->
+                    let v = mapping index v
                     index <- index + 1
-                    mapping index v),
+                    v),
                 source
             )
 
