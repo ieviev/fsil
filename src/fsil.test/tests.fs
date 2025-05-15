@@ -156,7 +156,7 @@ let testRoot =
             eq true (data2 |> forall (fun v -> v >= 2))
             eq true (data2 |> exists (fun v -> v = 15))
             eq false (data2 |> exists (fun v -> v = 16))
-            
+
             eq true (None |> forall (fun v -> v = 1))
             eq true (Some 1 |> forall (fun v -> v = 1))
             eq false (Some 2 |> forall (fun v -> v = 1))
@@ -205,12 +205,12 @@ let testRoot =
             eq args [| 5 |]
         }
 
-        test "try_find" {
+        test "find" {
             let res = [| 1..3 |]
 
-            eq (some 3) (res |> try_find (fun v -> v = 3))
-            eq none (res |> try_find (fun v -> v = 4))
-            eq none ([ 1..3 ] |> try_find (fun v -> v = 4))
+            eq (some 3) (res |> find (fun v -> v = 3))
+            eq none (res |> find (fun v -> v = 4))
+            eq none ([ 1..3 ] |> find (fun v -> v = 4))
         }
 
         test "bind" {
@@ -233,21 +233,23 @@ let testRoot =
                      v
                  |]))
         }
-        test "index" {
-            let res = [|
-                1
-                2
-                3
-            |]
+        test "find_index" {
+            let res = [| 1..3 |]
 
-            eq 0 (res |> try_index (fun v -> v = 1))
-            eq 1 (res |> try_index (fun v -> v = 2))
-            eq 2 (res |> try_index (fun v -> v = 3))
-            eq -1 (res |> try_index (fun v -> v = 10))
+            eq (some 0) (res |> find_index (fun v -> v = 1))
+            eq (some 1) (res |> find_index (fun v -> v = 2))
+            eq (some 2) (res |> find_index (fun v -> v = 3))
+            eq (none) (res |> find_index (fun v -> v = 10))
+        }
+
+        test "item" {
+            let res = [| 5;10;15 |]
+            eq 5 (item 0 res)
+            eq 5 (item 0 [5;10;15])
+
         }
         test_is_empty
     ]
 
 [<EntryPoint>]
-let main argv =
-    runTestsWithCLIArgs [] argv testRoot
+let main argv = runTestsWithCLIArgs [] argv testRoot
