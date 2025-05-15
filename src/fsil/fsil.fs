@@ -410,7 +410,7 @@ module Internal =
     type Pick =
 
         static member inline Invoke
-            (source: ^I, [<InlineIfLambda>] pred: 't -> voption<'v>)
+            (source: ^I, [<InlineIfLambda>] selector: 't -> voption<'v>)
             : voption<'v> =
 
             let mutable looking = true
@@ -420,7 +420,7 @@ module Internal =
                 source,
                 &looking,
                 (fun v ->
-                    result <- pred v
+                    result <- selector v
 
                     if result.IsSome then
                         looking <- false)
@@ -674,6 +674,8 @@ module Abstract =
     let inline len(source: _) : int = Internal.Length.Invoke source
     /// checked indexer
     let inline try_item k (source: _) = Internal.TryItem.Invoke(source, k)
+    /// alias for try_item, use `item` for unchecked
+    let inline get k (source: _) = Internal.TryItem.Invoke(source, k)
 
     /// unchecked indexer/key like `.Item`
     let inline item k (source: _) = Internal.Item.Invoke(source, k)
