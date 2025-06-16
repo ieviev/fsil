@@ -263,7 +263,7 @@ module Internal =
             (source: _, key: ^k)
             : _ =
             ((^I or TryItem): (static member TryItem: ^I * ^k -> voption< ^v >) (source,
-                                                                                     key))
+                                                                                 key))
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -676,6 +676,13 @@ module Abstract =
     let inline try_item k (source: _) = Internal.TryItem.Invoke(source, k)
     /// alias for try_item, use `item` for unchecked
     let inline get k (source: _) = Internal.TryItem.Invoke(source, k)
+
+    /// wrap potentially exception
+    let inline catch fn =
+        try
+            Ok(fn ())
+        with e ->
+            Error(e)
 
     /// unchecked indexer/key like `.Item`
     let inline item k (source: _) = Internal.Item.Invoke(source, k)
