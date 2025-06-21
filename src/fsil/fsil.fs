@@ -12,6 +12,74 @@ module Internal =
     [<Fable.Core.Erase>]
 #endif
     [<AbstractClass; Sealed>]
+    type Value =
+        static member inline Value(x: Result<'t, _>) : 't =
+            match x with
+            | Ok(v) -> v
+            | _ -> failwith "no value"
+
+        static member inline Value(x: ^t) : ^v = (^t: (member Value: ^v) x)
+
+        static member inline Invoke< ^I, ^v
+            when (^I or Value): (static member Value: ^I -> ^v)>
+            (source: _)
+            =
+            ((^I or Value): (static member Value: ^I -> ^v) (source))
+
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
+    type Item1 =
+
+        static member inline Item1(struct (x, _)) : 't = x
+        static member inline Item1(struct (x, _, _)) : 't = x
+        static member inline Item1(x: ^t) : ^r = (^t: (member Item1: ^r) x)
+
+        static member inline Invoke< ^I, ^r
+            when (^I or Item1): (static member Item1: ^I -> ^r)>
+            (source: _)
+            : ^r =
+            ((^I or Item1): (static member Item1: _ -> _) (source))
+
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
+    type Item2 =
+
+        static member inline Item2(struct (_, x)) : 't = x
+        static member inline Item2(struct (_, x, _)) : 't = x
+        static member inline Item2(x: ^t) : ^r = (^t: (member Item2: ^r) x)
+
+        static member inline Invoke< ^I, ^r
+            when (^I or Item2): (static member Item2: ^I -> ^r)>
+            (source: _)
+            : ^r =
+            ((^I or Item2): (static member Item2: _ -> _) (source))
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
+    type Item3 =
+
+        static member inline Item3(struct (_, _, x)) : 't = x
+        static member inline Item3(x: ^t) : ^r = (^t: (member Item3: ^r) x)
+
+        static member inline Invoke< ^I, ^r
+            when (^I or Item3): (static member Item3: ^I -> ^r)>
+            (source: _)
+            : ^r =
+            ((^I or Item3): (static member Item3: _ -> _) (source))
+
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
     type Default =
 
         static member inline Default(_f: option<'t> -> unit) : option<'t> = None
@@ -106,24 +174,6 @@ module Internal =
             : bool =
             ((^I or IsEmpty): (static member IsEmpty: ^I -> bool) (source))
 
-
-#if FABLE_COMPILER
-    [<Fable.Core.Erase>]
-#endif
-    [<AbstractClass; Sealed>]
-    type Value =
-        static member inline Value(x: Result<'t, _>) : 't =
-            match x with
-            | Ok(v) -> v
-            | _ -> failwith "no value"
-
-        static member inline Value(x: ^t) : ^v = (^t: (member Value: ^v) x)
-
-        static member inline Invoke< ^I, ^v
-            when (^I or Value): (static member Value: ^I -> ^v)>
-            (source: _)
-            =
-            ((^I or Value): (static member Value: ^I -> ^v) (source))
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -676,6 +726,14 @@ module Abstract =
     let inline try_item k (source: _) = Internal.TryItem.Invoke(source, k)
     /// alias for try_item, use `item` for unchecked
     let inline get k (source: _) = Internal.TryItem.Invoke(source, k)
+
+    /// tuple indexer (x,_)
+    let inline _1(source: _) = Internal.Item1.Invoke(source)
+    /// tuple indexer (_,x)
+    let inline _2(source: _) = Internal.Item2.Invoke(source)
+    /// tuple indexer (_,_,x)
+    let inline _3(source: _) = Internal.Item3.Invoke(source)
+
 
     /// wrap potentially exception
     let inline catch fn =
