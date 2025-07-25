@@ -86,5 +86,11 @@ let flatlist = flatten [[1;2;3];[4;5;6]]  // [1;2;3;4;5;6]
 let flatoption = flatten (Some(Some 1)) // Some 1
 ```
 
+### More
+
+The [Alloy](https://github.com/speakez-llc/Alloy) library extends fsil, adding additional operations, with the same implications. 
+
+
+
 
 Most important remember to have (f#)un! :)
