@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/fsil.benchmarks/fsil.benchmarks.fsproj" />
+    <Project Path="src/fsil.io/fsil.io.fsproj" />
     <Project Path="src/fsil.test/fsil.test.fsproj" />
     <Project Path="src/fsil/fsil.fsproj" />
   </Folder>

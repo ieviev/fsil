@@ -331,6 +331,19 @@ module Internal =
             : unit =
             ValueOption.iter f x
 
+        static member inline Iterate
+            (x: Set<'k>, [<InlineIfLambda>] f: 'k -> unit)
+            : unit =
+            Set.iter f x
+
+        static member inline Iterate
+            (x: System.Collections.Generic.HashSet<'k>, [<InlineIfLambda>] f: 'k -> unit)
+            : unit =
+            use mutable e = x.GetEnumerator()
+            
+            while e.MoveNext() do
+                f e.Current
+
         static member inline Iterate(x: 't[], [<InlineIfLambda>] f: 't -> unit) : unit =
             let mutable i = 0
 
@@ -384,6 +397,7 @@ module Internal =
 
             while e.MoveNext() do
                 f e.Current
+
 
         static member inline Invoke< ^I, ^t
             when (^I or Iterate): (static member Iterate: ^I * (^t -> unit) -> unit)>
@@ -533,6 +547,8 @@ module Internal =
             : voption<'u> =
             ValueOption.map f x
 
+        static member inline Map(x: Set<_>, [<InlineIfLambda>] f: 't -> 'u) : Set<'u> =
+            Set.map f x
 
         static member inline Map
             (x: Result<'t, _>, [<InlineIfLambda>] f: 't -> 'u)
