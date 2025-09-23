@@ -82,6 +82,14 @@ module Fs =
     let inline write (path: _) (data: _) = 
         Internal.Write.Invoke(path, data) 
     
+    let inline exists (path: string) = 
+        Path.Exists(path)
+
+    let inline extension (path: string) = 
+        Path.GetExtension(path)
+
+    let inline with_extension (extension:string) (path: string) = 
+        Path.ChangeExtension(path, extension)
 
     [<assembly: AutoOpen("Fsil.IO")>]
     do ()

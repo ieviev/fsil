@@ -162,24 +162,6 @@ let testRoot =
             eq false (Some 2 |> forall (fun v -> v = 1))
         }
 
-        test "spans" {
-            let data =
-                ResizeArray [
-                    15
-                    2
-                    21
-                ]
-
-            let span_data = span data
-
-            eq false (span_forall (span_data, (fun v -> v > 2)))
-            eq true (span_forall (span_data, (fun v -> v >= 2)))
-            eq true (span_exists (span_data, (fun v -> v = 15)))
-            eq false (span_exists (span_data, (fun v -> v = 16)))
-
-
-        }
-
         test "dict" {
             let d =
                 System.Collections.Generic.Dictionary(

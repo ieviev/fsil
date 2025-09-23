@@ -122,17 +122,6 @@ type Benches() =
         self.SomeArray
         |> Fsil.Abstract.fold 0 (fun acc v -> if v % 2 = 0 then acc + 1 else acc)
 
-
-    [<Benchmark>]
-    member self.FsilSpanIter() =
-        let mutable result = 0
-        let s = span self.SomeArray
-        span_iter (s, (fun v -> result <- result + v))
-        span_iter (s, (fun v -> result <- result + v))
-        span_iter (s, (fun v -> result <- result + v))
-        span_iter (s, (fun v -> result <- result + v))
-        span_iter (s, (fun v -> result <- result + v))
-
     [<Benchmark>]
     member self.FsilForall() =
         let s = self.SomeArray

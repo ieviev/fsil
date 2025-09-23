@@ -410,6 +410,91 @@ module Internal =
     [<Fable.Core.Erase>]
 #endif
     [<AbstractClass; Sealed>]
+    type IterateReverse =
+
+        static member inline IterateReverse
+            (x: option<'t>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            Iterate.Invoke(x,f)
+
+        static member inline IterateReverse
+            (x: voption<'t>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            Iterate.Invoke(x,f)
+
+        static member inline IterateReverse
+            (x: Result<'t, _>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            Iterate.Invoke(x,f)
+
+        static member inline IterateReverse
+            (x: Set<'k>, [<InlineIfLambda>] f: 'k -> unit)
+            : unit =
+            for v in x |> Seq.rev do 
+                f v
+        static member inline IterateReverse
+            (x: list<'t>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            for v in x |> Seq.rev do 
+                f v
+
+        static member inline IterateReverse
+            (x: System.Collections.Generic.HashSet<'k>, [<InlineIfLambda>] f: 'k -> unit)
+            : unit =
+            // since it's not deterministic anyway
+            // so it's more efficient to iterate as given here
+            Iterate.Invoke(x,f)
+
+        static member inline IterateReverse
+            (x: Dictionary<'k, 'v>, [<InlineIfLambda>] f: KeyValuePair<'k, 'v> -> unit)
+            : unit =
+            Iterate.Invoke(x,f)
+
+        static member inline IterateReverse(x: 't[], [<InlineIfLambda>] f: 't -> unit) : unit =
+            let mutable i = x.Length
+            while i <> 0 do
+                i <- i - 1
+                f x[i]
+
+        
+
+        static member inline IterateReverse
+            (x: System.Span<'t>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            let mutable i = 0
+            while i <> 0 do
+                i <- i - 1
+                f x[i]
+
+        static member inline IterateReverse
+            (x: System.ReadOnlySpan<'t>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            let mutable i = 0
+
+            while i <> 0 do
+                i <- i - 1
+                f x[i]
+
+        static member inline IterateReverse
+            (x: ResizeArray<'t>, [<InlineIfLambda>] f: 't -> unit)
+            : unit =
+            let mutable i = 0
+
+            while i <> 0 do
+                i <- i - 1
+                f x[i]
+
+        static member inline Invoke< ^I, ^t
+            when (^I or IterateReverse): (static member IterateReverse: ^I * (^t -> unit) -> unit)>
+            (source: _, [<InlineIfLambda>] action: ^t -> unit)
+            : unit =
+            ((^I or IterateReverse): (static member IterateReverse: ^I * (^t -> unit) -> unit) (source,
+                                                                                  action))
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
     type IterateIndexed =
 
         static member inline Invoke
@@ -651,6 +736,18 @@ module Internal =
     [<Fable.Core.Erase>]
 #endif
     [<AbstractClass; Sealed>]
+    type FoldRev =
+        static member inline Invoke
+            ((source: _), (s0: _), [<InlineIfLambdaAttribute>] fn: ^acc -> ^t -> ^acc)
+            : ^acc =
+            let mutable state = s0
+            IterateReverse.Invoke(source, (fun v -> state <- fn state v))
+            state
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
     type FoldIndexed =
         static member inline Invoke
             (s0: ^acc)
@@ -707,7 +804,8 @@ module Abstract =
     let inline exists ([<InlineIfLambdaAttribute>] f: 't -> bool) (x: _) : bool =
         Internal.Exists.Invoke(x, f)
 
-    let inline iter_range
+    /// same as a for loop from 0..len-1
+    let inline iter_len
         ([<InlineIfLambdaAttribute>] f: int -> unit)
         (limit_exclusive: int)
         : unit =
@@ -720,12 +818,19 @@ module Abstract =
     let inline iter ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.Iterate.Invoke(x, f)
 
+    let inline iter_rev ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
+        Internal.IterateReverse.Invoke(x, f)
+
     let inline iteri ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.IterateIndexed.Invoke(x, f)
 
     // this is intentionally defined initial value first for type inference
     let inline fold (initial) ([<InlineIfLambdaAttribute>] f) (x: _) =
         Internal.Fold.Invoke(x, initial, f)
+
+    // this is intentionally defined initial value first for type inference
+    let inline fold_rev (initial) ([<InlineIfLambdaAttribute>] f) (x: _) =
+        Internal.FoldRev.Invoke(x, initial, f)
 
     let inline foldi (initial) ([<InlineIfLambdaAttribute>] f) (x: _) =
         Internal.FoldIndexed.Invoke initial x f
@@ -798,49 +903,4 @@ type Abstract =
     static member inline span(x: string) : System.ReadOnlySpan<char> =
         System.MemoryExtensions.AsSpan(x)
 
-    static member inline span_iter
-        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] f: 't -> unit)
-        : unit =
-        Internal.Iterate.Iterate(x, f)
-
-    static member inline span_iter_while
-        (x: System.Span<'t>, cond: byref<bool>, [<InlineIfLambdaAttribute>] f: 't -> unit)
-        : unit =
-        Internal.IterateWhile.IterateWhile(x, &cond, f)
-
-    static member inline span_iteri
-        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] f: int -> 't -> unit)
-        : unit =
-        let mutable index = 0
-
-        Internal.Iterate.Iterate(
-            x,
-            (fun v ->
-                f index v
-                index <- index + 1)
-        )
-
-    // todo: some kind of simd lookups as well
-
-    static member inline span_forall
-        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] pred: 't -> bool)
-        : bool =
-        let mutable notfound = true
-
-        Internal.IterateWhile.IterateWhile(x, &notfound, (fun v -> notfound <- pred v))
-
-        notfound
-
-    static member inline span_exists
-        (x: System.Span<'t>, [<InlineIfLambdaAttribute>] pred: 't -> bool)
-        : bool =
-        let mutable notfound = true
-
-        Internal.IterateWhile.IterateWhile(
-            x,
-            &notfound,
-            (fun v -> notfound <- not (pred v))
-        )
-
-        not notfound
 #endif
