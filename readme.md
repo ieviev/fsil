@@ -25,11 +25,7 @@ The functions in this library compile down to **exactly the same form as the (op
 
 Currently this library contains a fairly small set of functions:
 
-`iter`, `iteri`, `iter_range`, `map`, `mapi`, `is_some`, `is_none`, `is_ok`, `some`, `none`, `try_item`, `value`, `len`, `enum`, `enumv`, `default_`, `default_inst`, `default_with`, `zero`, `one`, `print`, `forall`, `exists`, `fold`, `foldi`.
-
-there are also some functions for spans with separate function definitions due to their limitations: 
-
-`span_forall`, `span_exists`, `span_iter`... 
+`iter`, `iteri`, `iter_len`, `map`, `mapi`, `is_some`, `is_none`, `is_ok`, `some`, `none`, `try_item`, `value`, `len`, `enum`, `enumv`, `default_`, `default_inst`, `default_with`, `zero`, `one`, `print`, `forall`, `exists`, `fold`, `foldi`.
 
 You can also define your own implementations as static members. [here is an example](./src/fsil.test/tests.fs) for `iter` and `map` on a Tree, for documentation just look at the [source code itself](./src/fsil/Library.fs).
 
