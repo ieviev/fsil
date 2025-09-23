@@ -11,7 +11,7 @@
     <PackageOutputPath>./nupkg</PackageOutputPath>
     <Authors>ieviev</Authors>
     <Title>$(ProjectName)</Title>
-    <Version>2.0.11</Version>
+    <Version>2.0.13</Version>
     <RepositoryUrl>https://github.com/ieviev/fsil</RepositoryUrl>
     <PackageReadmeFile>readme.md</PackageReadmeFile>
     <PackageLicenseFile>license.txt</PackageLicenseFile>
@@ -22,6 +22,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="*.fsproj; *.fs; *.fsi" PackagePath="fable\" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
+    <PackageReference Update="FSharp.Core" Version="9.0.303" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="fsil.fs" />

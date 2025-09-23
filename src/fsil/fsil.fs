@@ -791,10 +791,14 @@ module Abstract =
     let inline is_none<'a when 'a: (member IsNone: bool)>(arg: ^a) : bool = arg.IsNone
 
     let inline is_ok<'a when 'a: (member IsOk: bool)>(arg: ^a) : bool = arg.IsOk
+    
+    let inline name<'a, ^name when 'a: (member Name: ^name)>(arg: ^a) : ^name = arg.Name
 
+    /// value-to-enum
     let inline enum(value: ^e) : ^t when ^t: enum<^e> =
         LanguagePrimitives.EnumOfValue value
 
+    /// enum-to-value
     let inline enumv(enum: ^t when ^t: enum<^e>) : ^e =
         LanguagePrimitives.EnumToValue enum
 
@@ -840,6 +844,8 @@ module Abstract =
     let inline mapi ([<InlineIfLambdaAttribute>] f) (x: _) =
         Internal.MapIndexed.Invoke(x, f)
 
+    let inline map_err ([<InlineIfLambdaAttribute>] f) (x: _) = Result.mapError f x
+
     let inline bind ([<InlineIfLambdaAttribute>] f) (x: _) = Internal.Bind.Invoke(f, x)
 
     let inline len(source: _) : int = Internal.Length.Invoke source
@@ -856,7 +862,7 @@ module Abstract =
     let inline _3(source: _) = Internal.Item3.Invoke(source)
 
 
-    /// wrap potentially exception
+    /// wrap function that may throw exception
     let inline catch fn =
         try
             Ok(fn ())
@@ -904,3 +910,125 @@ type Abstract =
         System.MemoryExtensions.AsSpan(x)
 
 #endif
+
+#nowarn "193"
+
+// these should be part of F# standard library
+[<AbstractClass; Sealed>]
+module Builders = 
+
+    [<Sealed>]
+    type ResultBuilder() =
+        member inline __.Return(x) = Ok x
+
+        member inline __.ReturnFrom(m: 'T option) = m
+
+        member inline __.Bind(m, [<InlineIfLambda>] f) = Result.bind f m
+
+        member inline __.Zero() = None
+
+        member inline __.Combine(m, f) = Option.bind f m
+
+        member inline __.Delay([<InlineIfLambda>] f: unit -> _) = f
+
+        member inline __.Run([<InlineIfLambda>] f) = f()
+
+        member inline __.TryWith(m, h) =
+            try __.ReturnFrom(m)
+            with e -> h e
+
+        member inline __.TryFinally(m, [<InlineIfLambda>] compensation) =
+            try __.ReturnFrom(m)
+            finally compensation()
+
+        member inline __.Using(res:#IDisposable, [<InlineIfLambda>] body) =
+            __.TryFinally(body res, fun () -> match res with null -> () | disp -> disp.Dispose())
+
+    
+    let result = new ResultBuilder()
+
+    [<Sealed>]
+    type OptionBuilder() =
+
+        member inline _.Bind(x: 'b voption, [<InlineIfLambda>] f: 'b -> voption<'c>) : voption<'c> =
+            ValueOption.bind f x
+
+        member inline _.BindReturn(x: 'b voption, [<InlineIfLambda>] f: 'b -> 'c) : voption<'c> =
+            ValueOption.map f x
+
+        member inline _.Return(x: 'a) = ValueSome x
+
+        member inline _.ReturnFrom(x: 'a voption) = x
+
+        member inline _.Zero() = ValueSome()
+
+        member inline _.Delay([<InlineIfLambda>] f: unit -> voption<_>) = f
+
+        member inline _.Combine
+            (m: 'input voption, [<InlineIfLambda>] binder: 'input -> 'output voption)
+            : 'output voption =
+            ValueOption.bind binder m
+
+        member inline this.Combine(m1: unit voption, m2: 'output voption) : 'output voption =
+            this.Bind(m1, (fun () -> m2))
+
+
+        member inline this.TryWith([<InlineIfLambda>] computation, handler) : 'value =
+            try
+                computation ()
+            with e ->
+                handler e
+
+        member inline this.TryFinally([<InlineIfLambda>] computation, compensation) =
+            try
+                computation ()
+            finally
+                compensation ()
+
+
+        member inline this.Using
+            (
+                resource: 'disposable :> IDisposable,
+                [<InlineIfLambda>] binder: 'disposable -> 'value voption
+            ) : 'value voption =
+            this.TryFinally(
+                (fun () -> binder resource),
+                (fun () ->
+                    if not (obj.ReferenceEquals(resource, null)) then
+                        resource.Dispose()
+                )
+            )
+
+        member inline this.While
+            (
+                [<InlineIfLambda>] guard: unit -> bool,
+                [<InlineIfLambda>] generator: unit -> unit voption
+            ) : unit voption =
+
+            let mutable doContinue = true
+            let mutable result = ValueSome()
+
+            while doContinue
+                  && guard () do
+                match generator () with
+                | ValueSome() -> ()
+                | ValueNone ->
+                    doContinue <- false
+                    result <- ValueNone
+
+            result
+
+        member inline this.For
+            (sequence: #seq<'value> voption, [<InlineIfLambda>] binder: 'value -> unit voption)
+            : unit voption =
+            sequence
+            |> ValueOption.bind (fun sequence ->
+                this.Using(
+                    sequence.GetEnumerator(),
+                    fun enum ->
+                        this.While(enum.MoveNext, this.Delay(fun () -> binder enum.Current))
+                )
+            )
+
+    let option = new OptionBuilder()
+
