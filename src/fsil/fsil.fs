@@ -461,7 +461,7 @@ module Internal =
         static member inline IterateReverse
             (x: System.Span<'t>, [<InlineIfLambda>] f: 't -> unit)
             : unit =
-            let mutable i = 0
+            let mutable i = x.Length
             while i <> 0 do
                 i <- i - 1
                 f x[i]
@@ -469,7 +469,7 @@ module Internal =
         static member inline IterateReverse
             (x: System.ReadOnlySpan<'t>, [<InlineIfLambda>] f: 't -> unit)
             : unit =
-            let mutable i = 0
+            let mutable i = x.Length
 
             while i <> 0 do
                 i <- i - 1
@@ -478,7 +478,7 @@ module Internal =
         static member inline IterateReverse
             (x: ResizeArray<'t>, [<InlineIfLambda>] f: 't -> unit)
             : unit =
-            let mutable i = 0
+            let mutable i = x.Count
 
             while i <> 0 do
                 i <- i - 1
