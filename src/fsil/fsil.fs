@@ -947,5 +947,9 @@ type Abstract =
     static member inline span(x: string) : System.ReadOnlySpan<char> =
         System.MemoryExtensions.AsSpan(x)
 
+    // static member inline ptr(x: ReadOnlySpan<byte>) : voidptr =
+    //     let typed_ptr = &&x[0]
+    //     NativeInterop.NativePtr.toVoidPtr typed_ptr
+
 #endif
 
