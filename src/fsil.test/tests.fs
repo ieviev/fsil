@@ -48,12 +48,12 @@ type Tree<'T> =
             (^inner -> unit) -> ^inner)>
         ((_f))
         : Tree< ^inner > =
-        let inner_default: 'inner = default_ ()
+        let inner_default: 'inner = default_type ()
         Leaf(inner_default)
 
 
 // ensure all basic members exist, compile and run
-let inline basic_collection_tests(data: ^t) : Test =
+let inline basic_collection_tests(data) : Test =
     testList $"collection tests {data.GetType().Name}" [
         test "iter" {
             let iter_: unit = data |> iter (fun v -> ())
@@ -131,11 +131,11 @@ let testRoot =
         }
 
         test "defaults" {
-            let _ = default_<int> ()
-            let _ = default_<uint> ()
-            let _ = default_<string> ()
-            let _ = default_<bool> ()
-            let _ = default_<byte> ()
+            let _ = default_type<int> ()
+            let _ = default_type<uint> ()
+            let _ = default_type<string> ()
+            let _ = default_type<bool> ()
+            let _ = default_type<byte> ()
             ()
         }
 
@@ -215,13 +215,13 @@ let testRoot =
                      v
                  |]))
         }
-        test "find_index" {
+        test "position" {
             let res = [| 1..3 |]
 
-            eq (some 0) (res |> find_index (fun v -> v = 1))
-            eq (some 1) (res |> find_index (fun v -> v = 2))
-            eq (some 2) (res |> find_index (fun v -> v = 3))
-            eq (none) (res |> find_index (fun v -> v = 10))
+            eq (some 0) (res |> position (fun v -> v = 1))
+            eq (some 1) (res |> position (fun v -> v = 2))
+            eq (some 2) (res |> position (fun v -> v = 3))
+            eq (none) (res |> position (fun v -> v = 10))
         }
 
         test "item" {

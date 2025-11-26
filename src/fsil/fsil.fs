@@ -137,16 +137,16 @@ module Internal =
             ValueOption.defaultWith f x
 
         static member inline DefaultWith
-            (x: Result<'t, 'e>, [<InlineIfLambda>] f: unit -> 't)
+            (x: Result<'t, _>, [<InlineIfLambda>] f: _ -> 't)
             : 't =
             match x with
             | Ok(v) -> v
-            | _ -> f ()
+            | Error(e) -> f e
 
         static member inline Invoke
-            ([<InlineIfLambda>] action: unit -> ^t, source: 'I)
+            ([<InlineIfLambda>] action: _ -> _, source: 'I)
             : 't =
-            ((^I or DefaultWith): (static member DefaultWith: ^I * (unit -> ^t) -> ^t) (source,
+            ((^I or DefaultWith): (static member DefaultWith: ^I * ('a -> ^t) -> ^t) (source,
                                                                                         action))
 
 #if FABLE_COMPILER
@@ -509,6 +509,24 @@ module Internal =
                     index <- index + 1)
             )
 
+    #if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
+    type IterateIndexedReverse =
+
+        static member inline Invoke
+            (source: _, [<InlineIfLambda>] action: int -> 't -> unit)
+            : unit =
+            let mutable index = 0
+
+            IterateReverse.Invoke<_, ^t>(
+                source,
+                (fun v ->
+                    action index v
+                    index <- index + 1)
+            )
+
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
 #endif
@@ -655,6 +673,13 @@ module Internal =
         static member inline Map(x: list<'t>, [<InlineIfLambda>] f: 't -> 'u) : list<'u> =
             List.map f x
 
+        static member inline Map(x: ResizeArray<'t>, [<InlineIfLambda>] f: 't -> 'u) : ResizeArray<'u> =
+            let dest = ResizeArray<'u>(x.Count)
+            let mutable i = 0
+            while i < x.Count do
+                dest[i] <- f x[i]
+                i <- i + 1
+            dest
 
         static member inline Invoke< ^I, ^t, ^u, ^r
             when (^I or Map): (static member Map: ^I * (^t -> ^u) -> ^r)>
@@ -774,8 +799,12 @@ module Abstract =
 
     let inline value(source: _) : _ = Internal.Value.Invoke(source)
 
-    let inline default_with ([<InlineIfLambdaAttribute>] or_else: unit -> _) (x: _) : _ =
+    let inline default_with ([<InlineIfLambdaAttribute>] or_else: _ -> _) (x: _) : _ =
         Internal.DefaultWith.Invoke(or_else, x)
+
+    /// imitation of rust unwrap
+    let inline unwrap (x: _) : _ =
+        Internal.DefaultWith.Invoke((fun v -> failwithf $"expecting value: {v}"), x)
 
     let inline zero<'a when 'a: (static member Zero: 'a)> : ^a = 'a.Zero
 
@@ -822,11 +851,20 @@ module Abstract =
     let inline iter ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.Iterate.Invoke(x, f)
 
+    /// equivalent to `Seq.rev >> Seq.iter`
     let inline iter_rev ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.IterateReverse.Invoke(x, f)
 
+    /// iterate while `cond` is true
+    let inline iter_while (cond : byref<bool>) ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
+        Internal.IterateWhile.Invoke(x,&cond, f)
+
     let inline iteri ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.IterateIndexed.Invoke(x, f)
+
+    /// equivalent to `Seq.rev >> Seq.iteri`
+    let inline iteri_rev ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
+        Internal.IterateIndexedReverse.Invoke(x, f)
 
     // this is intentionally defined initial value first for type inference
     let inline fold (initial) ([<InlineIfLambdaAttribute>] f) (x: _) =
@@ -874,10 +912,10 @@ module Abstract =
     let inline find k (source: _) = Internal.Find.Invoke(source, k)
     let inline pick k (source: _) = Internal.Pick.Invoke(source, k)
 
-    let inline find_index k (source: _) = Internal.FindIndex.Invoke(source, k)
+    let inline position k (source: _) = Internal.FindIndex.Invoke(source, k)
 
     // default from type parameter
-    let inline default_< ^t
+    let inline default_type< ^t
         when (^t or Internal.Default): (static member Default: (^t -> unit) -> ^t)>
         ()
         : ^t =
@@ -910,125 +948,4 @@ type Abstract =
         System.MemoryExtensions.AsSpan(x)
 
 #endif
-
-#nowarn "193"
-
-// these should be part of F# standard library
-[<AbstractClass; Sealed>]
-module Builders = 
-
-    [<Sealed>]
-    type ResultBuilder() =
-        member inline __.Return(x) = Ok x
-
-        member inline __.ReturnFrom(m: 'T option) = m
-
-        member inline __.Bind(m, [<InlineIfLambda>] f) = Result.bind f m
-
-        member inline __.Zero() = None
-
-        member inline __.Combine(m, f) = Option.bind f m
-
-        member inline __.Delay([<InlineIfLambda>] f: unit -> _) = f
-
-        member inline __.Run([<InlineIfLambda>] f) = f()
-
-        member inline __.TryWith(m, h) =
-            try __.ReturnFrom(m)
-            with e -> h e
-
-        member inline __.TryFinally(m, [<InlineIfLambda>] compensation) =
-            try __.ReturnFrom(m)
-            finally compensation()
-
-        member inline __.Using(res:#IDisposable, [<InlineIfLambda>] body) =
-            __.TryFinally(body res, fun () -> match res with null -> () | disp -> disp.Dispose())
-
-    
-    let result = new ResultBuilder()
-
-    [<Sealed>]
-    type OptionBuilder() =
-
-        member inline _.Bind(x: 'b voption, [<InlineIfLambda>] f: 'b -> voption<'c>) : voption<'c> =
-            ValueOption.bind f x
-
-        member inline _.BindReturn(x: 'b voption, [<InlineIfLambda>] f: 'b -> 'c) : voption<'c> =
-            ValueOption.map f x
-
-        member inline _.Return(x: 'a) = ValueSome x
-
-        member inline _.ReturnFrom(x: 'a voption) = x
-
-        member inline _.Zero() = ValueSome()
-
-        member inline _.Delay([<InlineIfLambda>] f: unit -> voption<_>) = f
-
-        member inline _.Combine
-            (m: 'input voption, [<InlineIfLambda>] binder: 'input -> 'output voption)
-            : 'output voption =
-            ValueOption.bind binder m
-
-        member inline this.Combine(m1: unit voption, m2: 'output voption) : 'output voption =
-            this.Bind(m1, (fun () -> m2))
-
-
-        member inline this.TryWith([<InlineIfLambda>] computation, handler) : 'value =
-            try
-                computation ()
-            with e ->
-                handler e
-
-        member inline this.TryFinally([<InlineIfLambda>] computation, compensation) =
-            try
-                computation ()
-            finally
-                compensation ()
-
-
-        member inline this.Using
-            (
-                resource: 'disposable :> IDisposable,
-                [<InlineIfLambda>] binder: 'disposable -> 'value voption
-            ) : 'value voption =
-            this.TryFinally(
-                (fun () -> binder resource),
-                (fun () ->
-                    if not (obj.ReferenceEquals(resource, null)) then
-                        resource.Dispose()
-                )
-            )
-
-        member inline this.While
-            (
-                [<InlineIfLambda>] guard: unit -> bool,
-                [<InlineIfLambda>] generator: unit -> unit voption
-            ) : unit voption =
-
-            let mutable doContinue = true
-            let mutable result = ValueSome()
-
-            while doContinue
-                  && guard () do
-                match generator () with
-                | ValueSome() -> ()
-                | ValueNone ->
-                    doContinue <- false
-                    result <- ValueNone
-
-            result
-
-        member inline this.For
-            (sequence: #seq<'value> voption, [<InlineIfLambda>] binder: 'value -> unit voption)
-            : unit voption =
-            sequence
-            |> ValueOption.bind (fun sequence ->
-                this.Using(
-                    sequence.GetEnumerator(),
-                    fun enum ->
-                        this.While(enum.MoveNext, this.Delay(fun () -> binder enum.Current))
-                )
-            )
-
-    let option = new OptionBuilder()
 
