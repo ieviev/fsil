@@ -7,8 +7,9 @@ Features:
 - a small generic utils library like [FSharpPlus](https://github.com/fsprojects/FSharpPlus)
 - all functions are inline and trimmable, won't bloat your binary size: you pay for only what you use
 - Fable compatible
-- **zero cost**: does not create junk variables or implicit allocations
+- **zero cost**: does not create junk variables or implicit allocations when possible
 - uses `[<AutoOpen>]` so all functions are in the global namespace
+- just copy the single source file if you want to avoid the dependency (and modify to your preferences)
 
 Example:
 
@@ -20,7 +21,7 @@ Example:
 
 ####
 
-I love F# for high performance programming and this makes high-level generic F# a little more feasible without punishing the user performance-wise.
+I love optimizing things in F# and this library makes high-level generic F# a little more feasible without punishing the user performance-wise.
 The functions in this library compile down to **exactly the same form as the (optimal) resolved implementation** so `iter f x` to the compiler is **identical** to e.g., `ValueOption.iter f x` or `Array.iter f x`.
 
 Currently this library contains a fairly small set of functions:

@@ -5,8 +5,15 @@ open System.Collections.Generic
 open System.Runtime.CompilerServices
 open System
 
+#if !FABLE_COMPILER
+open System.Threading.Tasks
+#endif        
+
+
 [<AbstractClass>]
 module Internal =
+    
+    
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -27,53 +34,54 @@ module Internal =
             ((^I or Value): (static member Value: ^I -> ^v) (source))
 
 
-#if FABLE_COMPILER
-    [<Fable.Core.Erase>]
-#endif
-    [<AbstractClass; Sealed>]
-    type Item1 =
+// tried _1, _2 for tuple accessors for a while, didnt really like it!
+// #if FABLE_COMPILER
+//     [<Fable.Core.Erase>]
+// #endif
+//     [<AbstractClass; Sealed>]
+//     type Item1 =
 
-        static member inline Item1(struct (x, _)) : 't = x
-        static member inline Item1(struct (x, _, _)) : 't = x
-        static member inline Item1(x: ^t) : ^r = (^t: (member Item1: ^r) x)
+//         static member inline Item1(struct (x, _)) : 't = x
+//         static member inline Item1(struct (x, _, _)) : 't = x
+//         static member inline Item1(x: ^t) : ^r = (^t: (member Item1: ^r) x)
 
-        static member inline Invoke< ^I, ^r
-            when (^I or Item1): (static member Item1: ^I -> ^r)>
-            (source: _)
-            : ^r =
-            ((^I or Item1): (static member Item1: _ -> _) (source))
+//         static member inline Invoke< ^I, ^r
+//             when (^I or Item1): (static member Item1: ^I -> ^r)>
+//             (source: _)
+//             : ^r =
+//             ((^I or Item1): (static member Item1: _ -> _) (source))
 
 
-#if FABLE_COMPILER
-    [<Fable.Core.Erase>]
-#endif
-    [<AbstractClass; Sealed>]
-    type Item2 =
+// #if FABLE_COMPILER
+//     [<Fable.Core.Erase>]
+// #endif
+//     [<AbstractClass; Sealed>]
+//     type Item2 =
 
-        static member inline Item2(struct (_, x)) : 't = x
-        static member inline Item2(struct (_, x, _)) : 't = x
-        static member inline Item2(x: ^t) : ^r = (^t: (member Item2: ^r) x)
+//         static member inline Item2(struct (_, x)) : 't = x
+//         static member inline Item2(struct (_, x, _)) : 't = x
+//         static member inline Item2(x: ^t) : ^r = (^t: (member Item2: ^r) x)
 
-        static member inline Invoke< ^I, ^r
-            when (^I or Item2): (static member Item2: ^I -> ^r)>
-            (source: _)
-            : ^r =
-            ((^I or Item2): (static member Item2: _ -> _) (source))
+//         static member inline Invoke< ^I, ^r
+//             when (^I or Item2): (static member Item2: ^I -> ^r)>
+//             (source: _)
+//             : ^r =
+//             ((^I or Item2): (static member Item2: _ -> _) (source))
 
-#if FABLE_COMPILER
-    [<Fable.Core.Erase>]
-#endif
-    [<AbstractClass; Sealed>]
-    type Item3 =
+// #if FABLE_COMPILER
+//     [<Fable.Core.Erase>]
+// #endif
+//     [<AbstractClass; Sealed>]
+//     type Item3 =
 
-        static member inline Item3(struct (_, _, x)) : 't = x
-        static member inline Item3(x: ^t) : ^r = (^t: (member Item3: ^r) x)
+//         static member inline Item3(struct (_, _, x)) : 't = x
+//         static member inline Item3(x: ^t) : ^r = (^t: (member Item3: ^r) x)
 
-        static member inline Invoke< ^I, ^r
-            when (^I or Item3): (static member Item3: ^I -> ^r)>
-            (source: _)
-            : ^r =
-            ((^I or Item3): (static member Item3: _ -> _) (source))
+//         static member inline Invoke< ^I, ^r
+//             when (^I or Item3): (static member Item3: ^I -> ^r)>
+//             (source: _)
+//             : ^r =
+//             ((^I or Item3): (static member Item3: _ -> _) (source))
 
 
 #if FABLE_COMPILER
@@ -314,6 +322,10 @@ module Internal =
             : _ =
             ((^I or TryItem): (static member TryItem: ^I * ^k -> voption< ^v >) (source,
                                                                                  key))
+
+
+
+
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -823,8 +835,8 @@ module Abstract =
     
     let inline name<'a, ^name when 'a: (member Name: ^name)>(arg: ^a) : ^name = arg.Name
 
-    /// value-to-enum
-    let inline enum(value: ^e) : ^t when ^t: enum<^e> =
+    /// value-to-enum (works for enums backed by other than int32)
+    let inline enum (value : 'T) : 'Enum when 'Enum : enum<'T> =
         LanguagePrimitives.EnumOfValue value
 
     /// enum-to-value
@@ -866,6 +878,13 @@ module Abstract =
     let inline iteri_rev ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.IterateIndexedReverse.Invoke(x, f)
 
+#if !FABLE_COMPILER
+    /// parallel iteration for convenience `iter_parallel num_threads f x`
+    let inline iter_parallel (num_threads: int) (f: Action<'x>) (x: seq<'x>) : unit =
+        let options = ParallelOptions(MaxDegreeOfParallelism = num_threads)
+        Parallel.ForEach(x, options, f) |> ignore
+#endif
+
     // this is intentionally defined initial value first for type inference
     let inline fold (initial) ([<InlineIfLambdaAttribute>] f) (x: _) =
         Internal.Fold.Invoke(x, initial, f)
@@ -892,13 +911,12 @@ module Abstract =
     /// alias for try_item, use `item` for unchecked
     let inline get k (source: _) = Internal.TryItem.Invoke(source, k)
 
-    /// tuple indexer (x,_)
-    let inline _1(source: _) = Internal.Item1.Invoke(source)
-    /// tuple indexer (_,x)
-    let inline _2(source: _) = Internal.Item2.Invoke(source)
-    /// tuple indexer (_,_,x)
-    let inline _3(source: _) = Internal.Item3.Invoke(source)
-
+    // /// tuple indexer (x,_)
+    // let inline _1(source: _) = Internal.Item1.Invoke(source)
+    // /// tuple indexer (_,x)
+    // let inline _2(source: _) = Internal.Item2.Invoke(source)
+    // /// tuple indexer (_,_,x)
+    // let inline _3(source: _) = Internal.Item3.Invoke(source)
 
     /// wrap function that may throw exception
     let inline catch fn =
@@ -933,6 +951,8 @@ module Abstract =
 #endif
 
 #if !FABLE_COMPILER
+
+
 // overloads for byref/struct/other types
 // not as general but at least allowed in CIL
 [<AbstractClass; Sealed; AutoOpen>]

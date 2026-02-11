@@ -1,7 +1,4 @@
-﻿
-
-
-module Fsil.IO 
+﻿module Fsil.IO 
 
 open System.Collections.Generic
 open System.Runtime.CompilerServices

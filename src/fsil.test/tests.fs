@@ -242,22 +242,6 @@ let testRoot =
                 ])
         }
 
-        test "tuples" {
-            let t2 = (1, 2)
-            let t3 = (1, 2, 3)
-            let t3s = struct (1, 2, 3)
-
-            eq 1 (_1 t2)
-            eq 2 (_2 t2)
-
-            eq 1 (_1 t3)
-            eq 2 (_2 t3)
-            eq 3 (_3 t3)
-
-            eq 1 (_1 t3s)
-            eq 2 (_2 t3s)
-            eq 3 (_3 t3s)
-        }
         test_is_empty
     ]
 
