@@ -52,7 +52,7 @@ module Internal =
 [<Fable.Core.Erase>]
 #endif
 [<AbstractClass; Sealed>]
-module Fs =
+module Io =
     open System.IO
 
     let inline read(path: string) = 
@@ -66,7 +66,7 @@ module Fs =
             System.Text.Json.JsonSerializer.Deserialize<'t>(stream)
         )
 
-    let inline read_to_string(path: string) = 
+    let inline read_string(path: string) = 
         catch (fun _ -> 
             System.IO.File.ReadAllText(path)
         )
@@ -88,6 +88,11 @@ module Fs =
     let inline with_extension (extension:string) (path: string) = 
         Path.ChangeExtension(path, extension)
 
+    /// get env variable by name
+    let inline env (name:string) = 
+        match System.Environment.GetEnvironmentVariable(name) with
+        | null -> ValueNone
+        | x -> ValueSome x
+
     [<assembly: AutoOpen("Fsil.IO")>]
     do ()
-        

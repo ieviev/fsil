@@ -1,8 +1,7 @@
-<Project>  
-  <PropertyGroup>
-    
-  </PropertyGroup>
-  <PropertyGroup>
-      <UseArtifactsOutput>true</UseArtifactsOutput>
-   </PropertyGroup>
+<Project>
+    <PropertyGroup>
+        <UseArtifactsOutput>true</UseArtifactsOutput>
+        <TargetFrameworks>net10.0</TargetFrameworks>
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    </PropertyGroup>
 </Project>

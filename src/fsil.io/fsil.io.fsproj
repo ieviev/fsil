@@ -1,16 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net9.0</TargetFrameworks>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+    <PropertyGroup>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IsTrimmable>true</IsTrimmable>
+        <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+        <IsAotCompatible>true</IsAotCompatible>
+        <TrimMode>full</TrimMode>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="Library.fs" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Library.fs" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\fsil\fsil.fsproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\fsil\fsil.fsproj" />
+    </ItemGroup>
 
 </Project>
