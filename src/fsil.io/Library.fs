@@ -1,14 +1,14 @@
 ﻿module Fsil.IO 
 
+#if !FABLE_COMPILER
+
 open System.Collections.Generic
 open System.Runtime.CompilerServices
 open System
 
 [<AbstractClass>]
 module Internal =
-#if FABLE_COMPILER
-    [<Fable.Core.Erase>]
-#endif
+
     [<AbstractClass; Sealed>]
     type Write =
 
@@ -47,52 +47,69 @@ module Internal =
             ((^I or Write): (static member Write: string * ^I -> Result<unit,exn>) (path,
                                                                                   data))
 
-         
-#if FABLE_COMPILER
-[<Fable.Core.Erase>]
-#endif
-[<AbstractClass; Sealed>]
-module Io =
-    open System.IO
 
-    let inline read(path: string) = 
+open System.IO
+[<AbstractClass; Sealed; AutoOpen>]
+type IO =
+    static member inline read(path: string) = 
         catch (fun _ -> 
             System.IO.File.ReadAllBytes(path)
         )
 
-    let inline read_json<'t>(path: string) = 
+    static member inline read_json<'t>(path: string) = 
         catch (fun _ -> 
             use stream = System.IO.File.Open(path, FileMode.Open)
             System.Text.Json.JsonSerializer.Deserialize<'t>(stream)
         )
 
-    let inline read_string(path: string) = 
+    static member inline read_string(path: string) = 
         catch (fun _ -> 
             System.IO.File.ReadAllText(path)
         )
 
-    let inline read_dir(path: string) = 
+    static member inline read_dir(path: string) = 
         catch (fun _ -> 
             System.IO.Directory.EnumerateFileSystemEntries(path)
         )
 
-    let inline write (path: _) (data: _) = 
+    static member inline write (path: _) (data: _) = 
         Internal.Write.Invoke(path, data) 
     
-    let inline exists (path: string) = 
+    static member inline path_exists (path: string) = 
         Path.Exists(path)
 
-    let inline extension (path: string) = 
+    static member inline dirname (path: string) = 
+        Path.GetDirectoryName(path)
+
+    static member inline filename (path: string) = 
+        Path.GetFileName(path)
+
+    static member inline path_extension (path: string) = 
         Path.GetExtension(path)
 
-    let inline with_extension (extension:string) (path: string) = 
+    static member inline with_extension (extension:string) (path: string) = 
         Path.ChangeExtension(path, extension)
 
     /// get env variable by name
-    let inline env (name:string) = 
+    static member inline env (name:string) = 
         match System.Environment.GetEnvironmentVariable(name) with
         | null -> ValueNone
         | x -> ValueSome x
 
-    [<assembly: AutoOpen("Fsil.IO")>]
-    do ()
+    /// ReadOnlySpan byte -> string
+    static member inline from_utf8 (utf8bytes:ReadOnlySpan<byte>) = 
+        System.Text.Encoding.UTF8.GetString(utf8bytes)
+
+    static member inline utf8 (string:string) = 
+        System.Text.Encoding.UTF8.GetBytes(string)
+
+    static member inline json (anytype:'t) = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(anytype)
+    static member inline json_str (anytype:'t) = System.Text.Json.JsonSerializer.Serialize(anytype)
+
+    /// string -> lines
+    static member inline lines (string:string) = string.Split('\n')
+
+type System.Threading.Tasks.Task with
+    static member await (task': System.Threading.Tasks.Task<'t>) = task'.GetAwaiter().GetResult()
+
+#endif
