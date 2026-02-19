@@ -51,14 +51,15 @@ type Tree<'T> =
             fn v
             Tree.Iterate(r, fn)
 
-    static member IterateWhile(self: Tree<'T>, cond: byref<bool>, fn: 'T -> unit) : unit =
-        if cond then
-            match self with
-            | Leaf x -> fn x
-            | Node(v, l, r) ->
-                Tree.IterateWhile(l, &cond, fn)
-                if cond then fn v
-                if cond then Tree.IterateWhile(r, &cond, fn)
+    static member IterateWhile(self: Tree<'T>, fn: 'T -> bool) : bool =
+        match self with
+        | Leaf x -> fn x
+        | Node(v, l, r) ->
+            if Tree.IterateWhile(l, fn) then 
+                if fn v then 
+                    Tree.IterateWhile(r, fn)
+                else false
+            else false
 
 let tree1 = Leaf 1
 let iter = tree1 |> iter (fun v -> print v)
