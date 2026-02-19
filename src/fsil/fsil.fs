@@ -194,62 +194,80 @@ module Internal =
     type IterateWhile =
 
         static member inline IterateWhile
-            (x: 't[], cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
-            : unit =
+            (x: 't[], [<InlineIfLambda>] f: 't -> bool)
+            : bool =
             let mutable i = 0
             let length = x.Length
-
-            while cond && i < length do
-                f x[i]
+            let mutable cont = true
+            while (i < length && (cont <- f x[i]; cont)) do
                 i <- i + 1
+            cont
 
         static member inline IterateWhile
-            (x: Span<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
-            : unit =
+            (x: Span<'t>, [<InlineIfLambda>] f: 't -> bool)
+            : bool =
             let mutable i = 0
             let length = x.Length
-
-            while cond && i < length do
-                f x[i]
+            let mutable cont = true
+            while (i < length && (cont <- f x[i]; cont)) do
                 i <- i + 1
-
-        static member inline IterateWhile
-            (x: list<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
-            : unit =
-            let mutable curr = x
-
-            while cond && not curr.IsEmpty do
-                f curr.Head
-                curr <- curr.Tail
+            cont
 
         static member inline IterateWhile
             (
                 x: Dictionary<'k, 'v>,
-                cond: byref<bool>,
-                [<InlineIfLambda>] f: KeyValuePair<'k, 'v> -> unit
-            ) : unit =
+                [<InlineIfLambda>] f: KeyValuePair<'k, 'v> -> bool
+            ) : bool =
             use mutable e = x.GetEnumerator()
-
-            while cond && e.MoveNext() do
-                f e.Current
-
-        static member inline IterateWhile
-            (x: option<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
-            : unit =
-            if cond && x.IsSome then
-                f x.Value
+            let mutable cont = true
+            while (e.MoveNext() && (cont <- f e.Current; cont)) do ()
+            cont
+                
 
         static member inline IterateWhile
-            (x: voption<'t>, cond: byref<bool>, [<InlineIfLambda>] f: 't -> unit)
-            : unit =
-            if cond && x.IsSome then
-                f x.Value
+            (
+                x: list<'k>,
+                [<InlineIfLambda>] f: 'k -> bool
+            ) : bool =
+            use mutable e = (x:>seq<_>).GetEnumerator()
+            let mutable cont = true
+            while (e.MoveNext() && (cont <- f e.Current; cont)) do ()
+            cont
 
-        static member inline Invoke
-            (source: _, cond: byref<bool>, [<InlineIfLambda>] action: 't -> unit)
-            : unit =
-            ((^I or IterateWhile): (static member IterateWhile:
-                ^I * byref<bool> * (^t -> unit) -> unit) (source, &cond, action))
+        static member inline IterateWhile
+            (
+                x: HashSet<'k>,
+                [<InlineIfLambda>] f: 'k -> bool
+            ) : bool =
+            use mutable e = x.GetEnumerator()
+            let mutable cont = true
+            while (e.MoveNext() && (cont <- f e.Current; cont)) do ()
+            cont
+                
+
+        static member inline IterateWhile
+            (x: option<'t>,  [<InlineIfLambda>] f: 't -> bool)
+            : bool =
+            if x.IsSome then 
+                 f x.Value 
+            else false
+                 
+               
+
+        static member inline IterateWhile
+            (x: voption<'t>, [<InlineIfLambda>] f: 't -> bool)
+            : bool =
+            if  x.IsSome then
+                f x.Value  
+            else false
+
+        static member inline Invoke<^I, ^t
+            when (^I or IterateWhile): (static member IterateWhile:
+                ^I * (^t -> bool) -> bool) 
+            >
+            (source: _, [<InlineIfLambda>] action: _)
+            : bool =
+            ((^I or IterateWhile): (static member IterateWhile: ^I * (^t -> bool) -> bool) (source, action))
 
 
 #if FABLE_COMPILER
@@ -488,24 +506,6 @@ module Internal =
                     index <- index + 1)
             )
 
-#if FABLE_COMPILER
-    [<Fable.Core.Erase>]
-#endif
-    [<AbstractClass; Sealed>]
-    type Exists =
-
-        static member inline Invoke
-            (source: ^I, [<InlineIfLambda>] pred: 't -> bool)
-            : bool =
-
-            let mutable notfound = true
-
-            ((^I or IterateWhile): (static member IterateWhile:
-                'I * byref<bool> * _ -> unit) (source,
-                                               &notfound,
-                                               (fun v -> notfound <- not (pred v))))
-
-            not notfound
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -514,21 +514,19 @@ module Internal =
     type Find =
 
         static member inline Invoke
-            (source: ^I, [<InlineIfLambda>] pred: 't -> bool)
+            (source: _, [<InlineIfLambda>] pred: 't -> bool)
             : voption<'t> =
-
-            let mutable looking = true
             let mutable result = ValueNone
-
-            IterateWhile.Invoke(
+            let _ = IterateWhile.Invoke(
                 source,
-                &looking,
                 (fun v ->
                     if pred v then
-                        looking <- false
-                        result <- ValueSome v)
+                        result <- ValueSome v
+                        false
+                    else true
+                    )
+                    
             )
-
             result
 
 #if FABLE_COMPILER
@@ -538,20 +536,16 @@ module Internal =
     type Pick =
 
         static member inline Invoke
-            (source: ^I, [<InlineIfLambda>] selector: 't -> voption<'v>)
+            (source: _, [<InlineIfLambda>] selector: 't -> voption<'v>)
             : voption<'v> =
 
-            let mutable looking = true
             let mutable result = ValueNone
 
-            IterateWhile.Invoke(
+            let _ = IterateWhile.Invoke(
                 source,
-                &looking,
                 (fun v ->
                     result <- selector v
-
-                    if result.IsSome then
-                        looking <- false)
+                    not result.IsSome)
             )
 
             result
@@ -563,19 +557,17 @@ module Internal =
     type FindIndex =
 
         static member inline Invoke
-            (source: ^I, [<InlineIfLambda>] pred: 't -> bool)
+            (source: _, [<InlineIfLambda>] pred: 't -> bool)
             : voption<int> =
 
-            let mutable looking = true
             let mutable i = 0
+            let mutable result = ValueNone
 
-            IterateWhile.Invoke(
+            let _ = IterateWhile.Invoke(
                 source,
-                &looking,
-                (fun v -> if pred v then looking <- false else i <- i + 1)
+                (fun v -> if pred v then result <- ValueSome i; false else i <- i + 1; true)
             )
-
-            if looking then ValueNone else ValueSome i
+            result
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -584,17 +576,26 @@ module Internal =
     type Forall =
 
         static member inline Invoke
-            (source: ^I, [<InlineIfLambda>] pred: 't -> bool)
+            (source: _, [<InlineIfLambda>] pred: _)
             : bool =
 
             let mutable notfound = true
-
-            ((^I or IterateWhile): (static member IterateWhile:
-                'I * byref<bool> * _ -> unit) (source,
-                                               &notfound,
-                                               (fun v -> notfound <- pred v)))
-
+            let _ = IterateWhile.Invoke(source, (fun v -> notfound<-pred v;notfound))
             notfound
+
+#if FABLE_COMPILER
+    [<Fable.Core.Erase>]
+#endif
+    [<AbstractClass; Sealed>]
+    type Exists =
+
+        static member inline Invoke
+            (source: ^I, [<InlineIfLambda>] pred: _)
+            : bool =
+            let mutable notfound = true
+            let _ = IterateWhile.Invoke(source,(fun v -> notfound <- not (pred v); notfound))
+            not notfound
+
 
 #if FABLE_COMPILER
     [<Fable.Core.Erase>]
@@ -776,7 +777,7 @@ module Abstract =
 
     let inline none<'a when 'a: (static member None: 'a)> : ^a = 'a.None
 
-    // tbd: perhaps this should just be an alias for ValueSome
+    // note: perhaps this should just be an alias for ValueSome
     let inline some<'a, 'b when 'a: (static member Some: 'b -> 'a)> : 'b -> ^a = 'a.Some
 
     let inline is_some<'a when 'a: (member IsSome: bool)>(arg: ^a) : bool = arg.IsSome
@@ -795,10 +796,10 @@ module Abstract =
     let inline enumv(enum: ^t when ^t: enum<^e>) : ^e =
         LanguagePrimitives.EnumToValue enum
 
-    let inline forall ([<InlineIfLambdaAttribute>] f: 't -> bool) (x: _) : bool =
+    let inline forall ([<InlineIfLambdaAttribute>] f: _) (x: _) : bool =
         Internal.Forall.Invoke(x, f)
 
-    let inline exists ([<InlineIfLambdaAttribute>] f: 't -> bool) (x: _) : bool =
+    let inline exists ([<InlineIfLambdaAttribute>] f: _) (x: _) : bool =
         Internal.Exists.Invoke(x, f)
 
     /// same as a for loop from 0..len-1
@@ -820,8 +821,8 @@ module Abstract =
         Internal.IterateReverse.Invoke(x, f)
 
     /// iterate while `cond` is true
-    let inline iter_while (cond : byref<bool>) ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
-        Internal.IterateWhile.Invoke(x,&cond, f)
+    let inline iter_while ([<InlineIfLambdaAttribute>] f) (x: _) : bool =
+        Internal.IterateWhile.Invoke(x, f)
 
     let inline iteri ([<InlineIfLambdaAttribute>] f) (x: _) : unit =
         Internal.IterateIndexed.Invoke(x, f)
@@ -860,7 +861,7 @@ module Abstract =
     let inline len(source: _) : int = Internal.Length.Invoke source
     /// checked indexer
     let inline try_item k (source: _) = Internal.TryItem.Invoke(source, k)
-    /// alias for try_item, use `item` for unchecked
+    /// alias for try_item
     let inline get k (source: _) = Internal.TryItem.Invoke(source, k)
 
     /// wrap function that may throw exception
@@ -872,10 +873,10 @@ module Abstract =
 
     /// unchecked indexer/key like `.Item`
     let inline item k (source: _) = Internal.Item.Invoke(source, k)
-    let inline find k (source: _) = Internal.Find.Invoke(source, k)
-    let inline pick k (source: _) = Internal.Pick.Invoke(source, k)
+    let inline find ([<InlineIfLambdaAttribute>] k) (source: _) = Internal.Find.Invoke(source, k)
+    let inline pick ([<InlineIfLambdaAttribute>] k) (source: _) = Internal.Pick.Invoke(source, k)
 
-    let inline position k (source: _) = Internal.FindIndex.Invoke(source, k)
+    let inline position ([<InlineIfLambdaAttribute>] k) (source: _) = Internal.FindIndex.Invoke(source, k)
 
     // default from type parameter
     let inline default_type< ^t
@@ -901,10 +902,6 @@ type Abstract =
 
     static member inline span(x: string) : System.ReadOnlySpan<char> =
         System.MemoryExtensions.AsSpan(x)
-
-    // static member inline ptr(x: ReadOnlySpan<byte>) : voidptr =
-    //     let typed_ptr = &&x[0]
-    //     NativeInterop.NativePtr.toVoidPtr typed_ptr
 
 #endif
 
